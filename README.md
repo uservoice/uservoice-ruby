@@ -5,10 +5,19 @@ This gem allows you to easily:
 * Generate SSO token for creating SSO users / logging them into UserVoice (http://uservoice.com).
 * Do 3-legged and 2-legged UserVoice API calls safely without having to worry about the cryptographic details (unless you want).
 
+Examples
+========
+
+Prerequisites:
+* Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/
+* The SSO key of the account is hGsD7y7GhSksuoIh
+* The account has a following API client (Admin Console -> Settings -> Channels -> API):
+    * API key: oQt2BaunWNuainc8BvZpAm
+    * API secret: 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
+
+
 SSO-token generation using uservoice gem
 ----------------------------------------
-
-Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/ and your SSO key is hGsD7y7GhSksuoIh:
 
     sso_token = Uservoice.generate_sso_token('uservoice-subdomain', 'hGsD7y7GhSksuoIh', {
         :guid => 1001,
@@ -18,3 +27,15 @@ Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/ and 
 
     # Now this URL will log John Doe in:
     puts "https://uservoice_subdomain.uservoice.com/?sso=#{sso_token}"
+
+Making 2-Legged API calls
+-------------------------
+
+    oauth = Uservoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
+
+    # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
+
+    users_json = oauth.request(:get, "/api/v1/users.json?per_page=3").body
+    JSON.parse(users_json)['users'].each do |user_hash|
+      puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
+    end
