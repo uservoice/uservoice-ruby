@@ -10,7 +10,7 @@ Examples
 
 Prerequisites:
 * Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/
-* The SSO key of the account is hGsD7y7GhSksuoIh
+* The SSO key of the account is 982c88f2df72572859e8e23423eg87ed
 * The account has a following API client (Admin Console -> Settings -> Channels -> API):
     * API key: oQt2BaunWNuainc8BvZpAm
     * API secret: 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
@@ -19,7 +19,7 @@ Prerequisites:
 SSO-token generation using uservoice gem
 ----------------------------------------
 
-    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', 'hGsD7y7GhSksuoIh', {
+    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', '982c88f2df72572859e8e23423eg87ed', {
         :guid => 1001,
         :display_name => "John Doe",
         :email => 'john.doe@example.com'
