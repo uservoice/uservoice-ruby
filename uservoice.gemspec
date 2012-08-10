@@ -6,10 +6,10 @@ Gem::Specification.new do |s|
   s.name        = "uservoice"
   s.version     = Uservoice::VERSION
   s.authors     = ["Raimo Tuisku"]
-  s.email       = ["raimo.tuisku@gmail.com"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.email       = ["dev@usevoice.com"]
+  s.homepage    = "http://developer.uservoice.com"
+  s.summary     = %q{Client library for UserVoice API}
+  s.description = %q{The gem provides Ruby-bindings to UserVoice API and helps generating Single-Sign-On tokens.}
 
   s.rubyforge_project = "uservoice"
 
@@ -18,7 +18,10 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+  s.add_development_dependency "rspec"
+  s.add_runtime_dependency 'ezcrypto'
+  s.add_runtime_dependency 'json'
+  s.add_runtime_dependency 'cgi'
+  s.add_runtime_dependency 'base64'
+  s.add_runtime_dependency 'oauth'
 end
