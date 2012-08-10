@@ -10,10 +10,10 @@ Examples
 
 Prerequisites:
 * Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/
-* The SSO key of the account is 982c88f2df72572859e8e23423eg87ed
+* The SSO key of the account is SSO\_KEY = 982c88f2df72572859e8e23423eg87ed
 * The account has a following API client (Admin Console -> Settings -> Channels -> API):
-    * API key: oQt2BaunWNuainc8BvZpAm
-    * API secret: 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
+    * API key: API\_KEY = oQt2BaunWNuainc8BvZpAm
+    * API secret: API\_SECRET = 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
 
 
 SSO-token generation using uservoice gem
@@ -22,7 +22,7 @@ SSO-token generation using uservoice gem
 SSO-token can be used to create sessions for SSO users. They are capable of synchronizing the user information from one system to another.
 Generating the SSO token from SSO key and given uservoice subdomain can be done by calling UserVoice.generate\_sso\_token method like this:
 
-    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', '982c88f2df72572859e8e23423eg87ed', {
+    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', SSO_KEY, {
         :guid => 1001,
         :display_name => "John Doe",
         :email => 'john.doe@example.com'
@@ -38,7 +38,7 @@ Managing backups and extracting all the users of a UserVoice subdomain are typic
 of the gem you just need to create an instance of UserVoice::Oauth (needs an API client, see Admin Console -> Settings -> Channels -> API).
 Then just start making requests like the example below demonstrates.
 
-    oauth = UserVoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
+    oauth = UserVoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
 
     # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
 
@@ -55,7 +55,7 @@ user grants your site permission to access his or her data in his or her account
 
     CALLBACK_URL = 'http://localhost:3000/' # This represents the URL you want UserVoice send you back
 
-    oauth = Uservoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
+    oauth = Uservoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
 
     # You need to get a request token from UserVoice like this. Specify the :oauth_callback
     request_token = oauth.get_request_token(:oauth_callback => CALLBACK_URL)
