@@ -19,6 +19,9 @@ Prerequisites:
 SSO-token generation using uservoice gem
 ----------------------------------------
 
+SSO-token can be used to create sessions for SSO users. They are capable of synchronizing the user information from one system to another.
+Generating the SSO token from SSO key and given uservoice subdomain can be done by calling UserVoice.generate\_sso\_token method like this:
+
     sso_token = UserVoice.generate_sso_token('uservoice-subdomain', '982c88f2df72572859e8e23423eg87ed', {
         :guid => 1001,
         :display_name => "John Doe",
@@ -31,6 +34,10 @@ SSO-token generation using uservoice gem
 Making 2-Legged API calls
 -------------------------
 
+Managing backups and extracting all the users of a UserVoice subdomain are typical use cases for making 2-legged API calls. With the help
+of the gem you just need to create an instance of UserVoice::Oauth (needs an API client, see Admin Console -> Settings -> Channels -> API).
+Then just start making requests like the example below demonstrates.
+
     oauth = UserVoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
 
     # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
@@ -39,3 +46,31 @@ Making 2-Legged API calls
     JSON.parse(users_json)['users'].each do |user_hash|
       puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
     end
+
+Making 3-Legged API calls
+-------------------------
+
+If you want to make calls on behalf of a user, you need 3-legged API calls. It basically requires you to pass a link to UserVoice, where
+user grants your site permission to access his or her data in his or her account
+
+    CALLBACK_URL = 'http://localhost:3000/' # This represents the URL you want UserVoice send you back
+
+    oauth = Uservoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
+
+    # You need to get a request token from UserVoice like this. Specify the :oauth_callback
+    request_token = oauth.get_request_token(:oauth_callback => CALLBACK_URL)
+
+    # At this point you want to print/redirect to request_token.authorize_url in your application.
+    # Here we just output them as this is a command-line example.
+    puts "1. Go to #{request_token.authorize_url} and click \"Allow access\"."
+    puts "2. Then type the oauth_verifier which is passed as a GET parameter to the callback URL:"
+
+    # In a web app we would get the oauth_verifier from UserVoice (after a redirection back to CALLBACK_URL).
+    # In this command-line example we just read it from stdin:
+    access_token = request_token.get_access_token(:oauth_verifier => gets.match('\w*').to_s)
+
+    # All done. Now we can, for example, read the current user:
+    response = access_token.get("/api/v1/users/current.json").body
+    user_hash = JSON.parse(response)['user']
+
+    puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
