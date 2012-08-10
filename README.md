@@ -10,10 +10,10 @@ Examples
 
 Prerequisites:
 * Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/
-* The SSO key of the account is SSO\_KEY = 982c88f2df72572859e8e23423eg87ed
+* **SSO\_KEY** = 982c88f2df72572859e8e23423eg87ed (Admin Console -> Settings -> General -> User Authentication)
 * The account has a following API client (Admin Console -> Settings -> Channels -> API):
-    * API key: API\_KEY = oQt2BaunWNuainc8BvZpAm
-    * API secret: API\_SECRET = 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
+    * **API\_KEY** = oQt2BaunWNuainc8BvZpAm
+    * **API\_SECRET** = 3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2
 
 
 SSO-token generation using uservoice gem
