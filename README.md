@@ -1,4 +1,4 @@
-Uservoice gem for API connections
+UserVoice gem for API connections
 =================================
 
 This gem allows you to easily:
@@ -19,7 +19,7 @@ Prerequisites:
 SSO-token generation using uservoice gem
 ----------------------------------------
 
-    sso_token = Uservoice.generate_sso_token('uservoice-subdomain', 'hGsD7y7GhSksuoIh', {
+    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', 'hGsD7y7GhSksuoIh', {
         :guid => 1001,
         :display_name => "John Doe",
         :email => 'john.doe@example.com'
@@ -31,7 +31,7 @@ SSO-token generation using uservoice gem
 Making 2-Legged API calls
 -------------------------
 
-    oauth = Uservoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
+    oauth = UserVoice::OAuth.new('uservoice-subdomain', 'oQt2BaunWNuainc8BvZpAm', '3yQMSoXBpAwuK3nYHR0wpY6opE341inL9a2HynGF2')
 
     # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
 
