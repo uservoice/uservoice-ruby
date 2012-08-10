@@ -1,15 +1,9 @@
-Uservoice - A RubyGem for connecting UserVoice APIs and Single-Sign-On
-======================================================================
-
-Client library for UserVoice API.
+Uservoice gem for API connections
+=================================
 
 
-Examples
-========
-
-
-SSO-token generation
---------------------
+SSO-token generation using uservoice gem
+----------------------------------------
 
 Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/ and your SSO key is hGsD7y7GhSksuoIh:
 
