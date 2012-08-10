@@ -22,6 +22,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ezcrypto'
   s.add_runtime_dependency 'json'
   s.add_runtime_dependency 'cgi'
-  s.add_runtime_dependency 'base64'
   s.add_runtime_dependency 'oauth'
 end
