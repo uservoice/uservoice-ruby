@@ -7,10 +7,15 @@ require 'base64'
 require 'oauth'
 
 module UserVoice
+  EMAIL_FORMAT = %r{^(\w[-+.\w!\#\$%&'\*\+\-/=\?\^_`\{\|\}~]*@([-\w]*\.)+[a-zA-Z]{2,9})$}
+
   class Unauthorized < RuntimeError; end
  
   def self.generate_sso_token(subdomain_key, sso_key, user_hash, valid_for = 5 * 60)
     user_hash[:expires] ||= (Time.now.utc + valid_for).to_s unless valid_for.nil?
+    unless user_hash[:email].to_s.match(EMAIL_FORMAT)
+      raise Unauthorized.new("'#{user_hash[:email]}' is not a valid email address")
+    end
 
     key = EzCrypto::Key.with_password(subdomain_key, sso_key)
     encrypted = key.encrypt(user_hash.to_json)
