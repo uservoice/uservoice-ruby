@@ -30,5 +30,19 @@ describe UserVoice do
       user = JSON.parse(user_json)
       user['errors']['type'].should == 'unauthorized'
     end
+
+    it "should get current user with 3-legged call" do
+      sso_token = UserVoice.generate_sso_token(config['subdomain_name'], config['sso_key'], {
+        :guid => '1000000',
+        :display_name => "User Name",
+        :email => 'mailaddress@example.com'
+      })
+      access_token = subject.get_access_token_with_sso_token(sso_token)
+
+      user_json = access_token.request(:get, "/api/v1/users/current.json").body
+      user = JSON.parse(user_json)
+      user['user']['email'].should == 'mailaddress@example.com'
+      user['user']['guid'].should == '1000000'
+    end
   end
 end
