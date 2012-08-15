@@ -29,7 +29,7 @@ Generating the SSO token from SSO key and given uservoice subdomain can be done 
     })
 
     # Now this URL will log John Doe in:
-    puts "https://uservoice_subdomain.uservoice.com/?sso=#{sso_token}"
+    puts "https://uservoice-subdomain.uservoice.com/?sso=#{sso_token}"
 
 Making 2-Legged API calls
 -------------------------
