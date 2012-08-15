@@ -63,7 +63,6 @@ module UserVoice
     def login_as(email)
       raise Unauthorized.new('SSO key not specified') unless @sso_key
       login_with_sso_token(UserVoice.generate_sso_token(@subdomain_name, @sso_key, {
-        :guid => email,
         :email => email
       }))
     end

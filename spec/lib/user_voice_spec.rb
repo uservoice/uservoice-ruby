@@ -42,7 +42,6 @@ describe UserVoice do
       user_json = subject.request(:get, "/api/v1/users/current.json").body
       user = JSON.parse(user_json)
       user['user']['email'].should == 'mailaddress@example.com'
-      user['user']['guid'].should == '1000000'
     end
 
     it "should get current user with email address login" do
@@ -51,7 +50,6 @@ describe UserVoice do
       user_json = sso_client.request(:get, "/api/v1/users/current.json").body
       user = JSON.parse(user_json)
       user['user']['email'].should == 'mailaddress@example.com'
-      user['user']['guid'].should == 'mailaddress@example.com'
     end
 
     it "should raise error with invalid email parameter" do
