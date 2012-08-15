@@ -89,7 +89,7 @@ It is also possible to make calls without the consent of the user if you use the
       :email => 'mailaddress@example.com'
     }
     sso_token = UserVoice.generate_sso_token('uservoice-subdomain', config['sso_key'], sso_user_hash)
-    access_token = oauth.get_access_token_by_sso_token(sso_token)
+    access_token = oauth.get_access_token_with_sso_token(sso_token)
 
     # Example request: Get current user.
 

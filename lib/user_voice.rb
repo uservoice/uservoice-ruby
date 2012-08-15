@@ -24,7 +24,7 @@ module UserVoice
       super(api_key, api_secret, :site => api_url)
     end
 
-    def get_access_token_by_sso_token(sso_token)
+    def get_access_token_with_sso_token(sso_token)
       request_token = self.get_request_token()
       access_token = ::OAuth::AccessToken.new(self)
 
