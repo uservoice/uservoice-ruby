@@ -7,6 +7,7 @@ require 'base64'
 require 'oauth'
 
 module UserVoice
+  class Unauthorized < RuntimeError; end
  
   def self.generate_sso_token(subdomain_key, sso_key, user_hash, valid_for = 5 * 60)
     user_hash[:expires] ||= (Time.now.utc + valid_for).to_s unless valid_for.nil?
@@ -18,15 +19,24 @@ module UserVoice
     return CGI.escape(encoded)
   end
 
-  class OAuth < ::OAuth::Consumer
-    def initialize(subdomain_name, api_key, api_secret)
+  class Client
+    def initialize(subdomain_name, api_key, api_secret, attrs={})
       api_url = "https://#{subdomain_name}.uservoice.com"
-      super(api_key, api_secret, :site => api_url)
+      @callback = attrs[:callback]
+      if attrs[:access_token]
+        @access_token = OAuth::AccessToken.new(self)
+        @access_token.token = attrs[:access_token][:oauth_token]
+        @access_token.secret = attrs[:access_token][:oauth_secret]
+      end
+      @consumer = OAuth::Consumer.new(api_key, api_secret, :site => api_url)
     end
 
-    def get_access_token_with_sso_token(sso_token)
-      request_token = self.get_request_token()
-      access_token = ::OAuth::AccessToken.new(self)
+    def request_token
+      @request_token ||= @consumer.get_request_token(:oauth_callback => @callback)
+    end
+
+    def login_with_sso_token(sso_token)
+      access_token = OAuth::AccessToken.new(@consumer)
 
       authorize_response = JSON.parse(access_token.post('/api/v1/oauth/authorize.json', {
         :scheme => 'aes_cbc_128',
@@ -36,10 +46,13 @@ module UserVoice
       if authorize_response['token']
         access_token.token = authorize_response['token']['oauth_token']
         access_token.secret = authorize_response['token']['oauth_token_secret']
+        @access_token = access_token
       else
-        raise OAuth::Unauthorized.new("Could not get Access Token: #{authorize_response}")
+        raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
-      return access_token
+    end
+    def request(*args)
+      (@access_token || @consumer).request(*args)
     end
   end
 end

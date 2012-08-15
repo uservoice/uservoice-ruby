@@ -13,9 +13,9 @@ describe UserVoice do
     end
   end
 
-  describe OAuth do
-    subject { UserVoice::OAuth.new(config['subdomain_name'], 
-                                   config['api_key'], 
+  describe UserVoice::Client do
+    subject { UserVoice::Client.new(config['subdomain_name'],
+                                   config['api_key'],
                                    config['api_secret']) }
 
     it "should get users from the API" do
@@ -37,9 +37,8 @@ describe UserVoice do
         :display_name => "User Name",
         :email => 'mailaddress@example.com'
       })
-      access_token = subject.get_access_token_with_sso_token(sso_token)
-
-      user_json = access_token.request(:get, "/api/v1/users/current.json").body
+      subject.login_with_sso_token(sso_token)
+      user_json = subject.request(:get, "/api/v1/users/current.json").body
       user = JSON.parse(user_json)
       user['user']['email'].should == 'mailaddress@example.com'
       user['user']['guid'].should == '1000000'
