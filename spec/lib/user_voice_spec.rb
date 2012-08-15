@@ -54,7 +54,7 @@ describe UserVoice do
       user['user']['guid'].should == 'mailaddress@example.com'
     end
 
-    it "should get current user with email address login" do
+    it "should raise error with invalid email parameter" do
       expect { sso_client.login_as('ma') }.to raise_error(UserVoice::Unauthorized)
       expect { sso_client.login_as(nil) }.to raise_error(UserVoice::Unauthorized)
     end
