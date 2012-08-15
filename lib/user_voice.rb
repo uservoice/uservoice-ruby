@@ -21,14 +21,17 @@ module UserVoice
 
   class Client
     def initialize(subdomain_name, api_key, api_secret, attrs={})
-      api_url = "https://#{subdomain_name}.uservoice.com"
+      @subdomain_name = subdomain_name
       @callback = attrs[:callback]
+      @sso_key = attrs[:sso_key]
+      @consumer = OAuth::Consumer.new(api_key, api_secret, { 
+        :site => "https://#{@subdomain_name}.uservoice.com"
+      })
       if attrs[:access_token]
-        @access_token = OAuth::AccessToken.new(self)
+        @access_token = OAuth::AccessToken.new(@consumer)
         @access_token.token = attrs[:access_token][:oauth_token]
         @access_token.secret = attrs[:access_token][:oauth_secret]
       end
-      @consumer = OAuth::Consumer.new(api_key, api_secret, :site => api_url)
     end
 
     def request_token
@@ -51,6 +54,15 @@ module UserVoice
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
     end
+
+    def login_as(email)
+      raise Unauthorized.new('SSO key not specified') unless @sso_key
+      login_with_sso_token(UserVoice.generate_sso_token(@subdomain_name, @sso_key, {
+        :guid => email,
+        :email => email
+      }))
+    end
+
     def request(*args)
       (@access_token || @consumer).request(*args)
     end
