@@ -53,7 +53,7 @@ Making 3-Legged API calls
 If you want to make calls on behalf of a user, you need 3-legged API calls. It basically requires you to pass a link to UserVoice, where
 user grants your site permission to access his or her data in his or her account
 
-    CALLBACK_URL = 'http://localhost:3000/' # This represents the URL you want UserVoice send you back
+    CALLBACK_URL = 'http://localhost:3000/'
 
     oauth = Uservoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
 
