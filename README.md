@@ -74,3 +74,26 @@ user grants your site permission to access his or her data in his or her account
     user_hash = JSON.parse(response)['user']
 
     puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
+
+
+Making 3-Legged API calls with SSO token
+----------------------------------------
+
+It is also possible to make calls without the consent of the user if you use the SSO key.
+
+    oauth = UserVoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
+
+    sso_user_hash = {
+      :guid => '1000000',
+      :display_name => "User Name",
+      :email => 'mailaddress@example.com'
+    }
+    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', config['sso_key'], sso_user_hash)
+    access_token = oauth.get_access_token_by_sso_token(sso_token)
+
+    # Example request: Get current user.
+
+    response = access_token.get("/api/v1/users/current.json").body
+    user_hash = JSON.parse(response)['user']
+
+    puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
