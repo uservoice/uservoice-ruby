@@ -43,6 +43,14 @@ module UserVoice
       @request_token ||= @consumer.get_request_token(:oauth_callback => @callback)
     end
 
+    def authorize_url
+      request_token.authorize_url
+    end
+
+    def get_access_token(*args)
+      @access_token = request_token.get_access_token(*args)
+    end
+
     def login_with_sso_token(sso_token)
       access_token = OAuth::AccessToken.new(@consumer)
 
@@ -69,6 +77,12 @@ module UserVoice
 
     def request(*args)
       (@access_token || @consumer).request(*args)
+    end
+
+    %w(get post delete put).each do |method|
+      define_method(method) do |*args|
+        request(method, *args)
+      end
     end
   end
 end

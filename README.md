@@ -22,6 +22,7 @@ SSO-token generation using uservoice gem
 SSO-token can be used to create sessions for SSO users. They are capable of synchronizing the user information from one system to another.
 Generating the SSO token from SSO key and given uservoice subdomain can be done by calling UserVoice.generate\_sso\_token method like this:
 
+    require 'uservoice'
     sso_token = UserVoice.generate_sso_token('uservoice-subdomain', SSO_KEY, {
         :guid => 1001,
         :display_name => "John Doe",
@@ -38,11 +39,12 @@ Managing backups and extracting all the users of a UserVoice subdomain are typic
 of the gem you just need to create an instance of UserVoice::Oauth (needs an API client, see Admin Console -> Settings -> Channels -> API).
 Then just start making requests like the example below demonstrates.
 
-    oauth = UserVoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
+    require 'uservoice'
+    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET)
 
     # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
 
-    users_json = oauth.request(:get, "/api/v1/users.json?per_page=3").body
+    users_json = uservoice_client.get("/api/v1/users.json?per_page=3").body
     JSON.parse(users_json)['users'].each do |user_hash|
       puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
     end
@@ -55,45 +57,35 @@ user grants your site permission to access his or her data in his or her account
 
     CALLBACK_URL = 'http://localhost:3000/'
 
-    oauth = Uservoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
+    uservoice_client = Uservoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET, :callback => CALLBACK_URL)
 
-    # You need to get a request token from UserVoice like this. Specify the :oauth_callback
-    request_token = oauth.get_request_token(:oauth_callback => CALLBACK_URL)
-
-    # At this point you want to print/redirect to request_token.authorize_url in your application.
+    # At this point you want to print/redirect to uservoice_client.authorize_url in your application.
     # Here we just output them as this is a command-line example.
-    puts "1. Go to #{request_token.authorize_url} and click \"Allow access\"."
+    puts "1. Go to #{uservoice_client.authorize_url} and click \"Allow access\"."
     puts "2. Then type the oauth_verifier which is passed as a GET parameter to the callback URL:"
 
     # In a web app we would get the oauth_verifier from UserVoice (after a redirection back to CALLBACK_URL).
     # In this command-line example we just read it from stdin:
-    access_token = request_token.get_access_token(:oauth_verifier => gets.match('\w*').to_s)
+    uservoice_client.get_access_token(:oauth_verifier => gets.match('\w*').to_s)
 
     # All done. Now we can, for example, read the current user:
-    response = access_token.get("/api/v1/users/current.json").body
+    response = uservoice_client.get("/api/v1/users/current.json").body
     user_hash = JSON.parse(response)['user']
 
     puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
 
 
-Making 3-Legged API calls with SSO token
-----------------------------------------
+Making 2-Legged API calls as a user
+-----------------------------------
 
 It is also possible to make calls without the consent of the user if you use the SSO key.
 
-    oauth = UserVoice::OAuth.new('uservoice-subdomain', API_KEY, API_SECRET)
-
-    sso_user_hash = {
-      :guid => '1000000',
-      :display_name => "User Name",
-      :email => 'mailaddress@example.com'
-    }
-    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', config['sso_key'], sso_user_hash)
-    access_token = oauth.get_access_token_with_sso_token(sso_token)
+    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET)
+    uservoice_client.login_as('mailaddress@example.com')
 
     # Example request: Get current user.
 
-    response = access_token.get("/api/v1/users/current.json").body
+    response = uservoice_client.get("/api/v1/users/current.json").body
     user_hash = JSON.parse(response)['user']
 
     puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
