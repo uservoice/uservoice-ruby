@@ -52,6 +52,16 @@ describe UserVoice do
       user['user']['email'].should == 'mailaddress@example.com'
     end
 
+    it "should get current user with copied access token" do
+      sso_client.login_as('mailaddress@example.com')
+
+      subject.set_access_token(sso_client.access_token_hash)
+
+      user_json = subject.request(:get, "/api/v1/users/current.json").body
+      user = JSON.parse(user_json)
+      user['user']['email'].should == 'mailaddress@example.com'
+    end
+
     it "should raise error with invalid email parameter" do
       expect { sso_client.login_as('ma') }.to raise_error(UserVoice::Unauthorized)
       expect { sso_client.login_as(nil) }.to raise_error(UserVoice::Unauthorized)

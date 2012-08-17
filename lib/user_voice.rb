@@ -30,13 +30,10 @@ module UserVoice
       @callback = attrs[:callback]
       @sso_key = attrs[:sso_key]
       @consumer = OAuth::Consumer.new(api_key, api_secret, { 
-        :site => "https://#{@subdomain_name}.uservoice.com"
+        :site => "https://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
       })
-      if attrs[:access_token]
-        @access_token = OAuth::AccessToken.new(@consumer)
-        @access_token.token = attrs[:access_token][:oauth_token]
-        @access_token.secret = attrs[:access_token][:oauth_secret]
-      end
+      @access_token = OAuth::AccessToken.new(@consumer)
+      set_access_token(attrs[:access_token]) if attrs[:access_token]
     end
 
     def request_token
@@ -51,18 +48,27 @@ module UserVoice
       @access_token = request_token.get_access_token(*args)
     end
 
-    def login_with_sso_token(sso_token)
-      access_token = OAuth::AccessToken.new(@consumer)
+    def set_access_token(attrs)
+      @access_token.token = attrs[:oauth_token] || attrs['oauth_token']
+      @access_token.secret = attrs[:oauth_token_secret] || attrs['oauth_token_secret']
+      return @access_token
+    end
 
-      authorize_response = JSON.parse(access_token.post('/api/v1/oauth/authorize.json', {
+    def access_token_hash
+      {
+       :oauth_token => @access_token.token,
+       :oauth_token_secret => @access_token.secret
+      } if @access_token
+    end
+
+    def login_with_sso_token(sso_token)
+      authorize_response = JSON.parse(post('/api/v1/oauth/authorize.json', {
         :scheme => 'aes_cbc_128',
         :sso => sso_token,
         :request_token => request_token.token
       }).body)
       if authorize_response['token']
-        access_token.token = authorize_response['token']['oauth_token']
-        access_token.secret = authorize_response['token']['oauth_token_secret']
-        @access_token = access_token
+        set_access_token(authorize_response['token'])
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
@@ -76,7 +82,7 @@ module UserVoice
     end
 
     def request(*args)
-      (@access_token || @consumer).request(*args)
+      @access_token.request(*args)
     end
 
     %w(get post delete put).each do |method|
