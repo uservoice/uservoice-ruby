@@ -49,6 +49,21 @@ Then just start making requests like the example below demonstrates.
       puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
     end
 
+Making 2-Legged API calls as a user
+-----------------------------------
+
+It is also possible to make calls as any user. Method login\_as constructs SSO token in the background.
+
+    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET, :sso_key => SSO_KEY)
+    uservoice_client.login_as('mailaddress@example.com')
+
+    # Example request: Get current user.
+
+    response = uservoice_client.get("/api/v1/users/current.json").body
+    user_hash = JSON.parse(response)['user']
+
+    puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
+
 Making 3-Legged API calls
 -------------------------
 
@@ -74,18 +89,3 @@ user grants your site permission to access his or her data in his or her account
 
     puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
 
-
-Making 2-Legged API calls as a user
------------------------------------
-
-It is also possible to make calls without the consent of the user if you use the SSO key.
-
-    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET)
-    uservoice_client.login_as('mailaddress@example.com')
-
-    # Example request: Get current user.
-
-    response = uservoice_client.get("/api/v1/users/current.json").body
-    user_hash = JSON.parse(response)['user']
-
-    puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
