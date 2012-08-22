@@ -61,24 +61,18 @@ module UserVoice
       } if @access_token
     end
 
-    def login_with_sso_token(sso_token)
-      authorize_response = JSON.parse(post('/api/v1/oauth/authorize.json', {
-        :scheme => 'aes_cbc_128',
-        :sso => sso_token,
-        :request_token => request_token.token
+    def login_as(email)
+      unless email.to_s.match(EMAIL_FORMAT)
+        raise Unauthorized.new("'#{email}' is not a valid email address")
+      end
+      authorize_response = JSON.parse(post('/api/v1/users/find_or_create.json', {
+        'user[email]' => email
       }).body)
       if authorize_response['token']
         set_access_token(authorize_response['token'])
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
-    end
-
-    def login_as(email)
-      raise Unauthorized.new('SSO key not specified') unless @sso_key
-      login_with_sso_token(UserVoice.generate_sso_token(@subdomain_name, @sso_key, {
-        :email => email
-      }))
     end
 
     def request(*args)
