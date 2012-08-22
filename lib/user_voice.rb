@@ -28,7 +28,6 @@ module UserVoice
     def initialize(subdomain_name, api_key, api_secret, attrs={})
       @subdomain_name = subdomain_name
       @callback = attrs[:callback]
-      @sso_key = attrs[:sso_key]
       @consumer = OAuth::Consumer.new(api_key, api_secret, { 
         :site => "https://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
       })
