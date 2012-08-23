@@ -9,7 +9,7 @@ Examples
 ========
 
 Prerequisites:
-* Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/
+* Suppose your UserVoice site is at http://uservoice-subdomain.uservoice.com/ and **USERVOICE\_SUBDOMAIN** = uservoice-subdomain
 * **SSO\_KEY** = 982c88f2df72572859e8e23423eg87ed (Admin Console -> Settings -> General -> User Authentication)
 * The account has a following API client (Admin Console -> Settings -> Channels -> API):
     * **API\_KEY** = oQt2BaunWNuainc8BvZpAm
@@ -23,14 +23,14 @@ SSO-token can be used to create sessions for SSO users. They are capable of sync
 Generating the SSO token from SSO key and given uservoice subdomain can be done by calling UserVoice.generate\_sso\_token method like this:
 
     require 'uservoice'
-    sso_token = UserVoice.generate_sso_token('uservoice-subdomain', SSO_KEY, {
+    sso_token = UserVoice.generate_sso_token(USERVOICE_SUBDOMAIN, SSO_KEY, {
         :guid => 1001,
         :display_name => "John Doe",
         :email => 'john.doe@example.com'
     })
 
     # Now this URL will log John Doe in:
-    puts "https://uservoice-subdomain.uservoice.com/?sso=#{sso_token}"
+    puts "https://#{USERVOICE_SUBDOMAIN}.uservoice.com/?sso=#{sso_token}"
 
 Making 2-Legged API calls
 -------------------------
@@ -40,7 +40,7 @@ of the gem you just need to create an instance of UserVoice::Oauth (needs an API
 Then just start making requests like the example below demonstrates.
 
     require 'uservoice'
-    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET)
+    uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
     # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
 
@@ -54,7 +54,7 @@ Making 2-Legged API calls as a user
 
 It is also possible to make calls as any user. Method login\_as constructs SSO token in the background.
 
-    uservoice_client = UserVoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET, :sso_key => SSO_KEY)
+    uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :sso_key => SSO_KEY)
     uservoice_client.login_as('mailaddress@example.com')
 
     # Example request: Get current user.
@@ -72,7 +72,7 @@ user grants your site permission to access his or her data in his or her account
 
     CALLBACK_URL = 'http://localhost:3000/'
 
-    uservoice_client = Uservoice::Client.new('uservoice-subdomain', API_KEY, API_SECRET, :callback => CALLBACK_URL)
+    uservoice_client = Uservoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
 
     # At this point you want to print/redirect to uservoice_client.authorize_url in your application.
     # Here we just output them as this is a command-line example.
