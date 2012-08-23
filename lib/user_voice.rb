@@ -29,7 +29,7 @@ module UserVoice
       @subdomain_name = subdomain_name
       @callback = attrs[:callback]
       @consumer = OAuth::Consumer.new(api_key, api_secret, { 
-        :site => "https://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
+        :site => "#{attrs[:protocol] || 'https'}://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
       })
       @access_token = OAuth::AccessToken.new(@consumer)
       set_access_token(attrs[:access_token]) if attrs[:access_token]
