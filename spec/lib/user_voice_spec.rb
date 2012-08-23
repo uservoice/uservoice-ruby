@@ -4,7 +4,6 @@ describe UserVoice do
 
   it "should generate SSO token" do
     token = UserVoice.generate_sso_token(config['subdomain_name'], config['sso_key'], {
-      :guid => '1000000',
       :display_name => "User Name",
       :email => 'mailaddress@example.com'
     })
