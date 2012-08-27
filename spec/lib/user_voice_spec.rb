@@ -43,9 +43,9 @@ describe UserVoice do
       subject.login_as('mailaddress@example.com')
 
       new_client = UserVoice::Client.new(config['subdomain_name'],
-                                    config['api_key'],
-                                    config['api_secret'],
-                                   :uservoice_domain => config['uservoice_domain'])
+                                         config['api_key'],
+                                         config['api_secret'],
+                                        :uservoice_domain => config['uservoice_domain'])
 
       new_client.set_access_token(subject.access_token_hash)
 
