@@ -16,6 +16,9 @@ module UserVoice
     unless user_hash[:email].to_s.match(EMAIL_FORMAT)
       raise Unauthorized.new("'#{user_hash[:email]}' is not a valid email address")
     end
+    unless sso_key.to_s.length > 1
+      raise Unauthorized.new("Please specify your SSO key")
+    end
 
     key = EzCrypto::Key.with_password(subdomain_key, sso_key)
     encrypted = key.encrypt(user_hash.to_json)
@@ -60,12 +63,24 @@ module UserVoice
       } if @access_token
     end
 
+    def login_as_owner
+      authorize_response = JSON.parse(post('/api/v1/users/login_as_owner.json', {
+        'request_token' => request_token.token
+      }).body)
+      if authorize_response['token']
+        set_access_token(authorize_response['token'])
+      else
+        raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
+      end
+    end
+
     def login_as(email)
       unless email.to_s.match(EMAIL_FORMAT)
         raise Unauthorized.new("'#{email}' is not a valid email address")
       end
-      authorize_response = JSON.parse(post('/api/v1/users/find_or_create.json', {
-        'user[email]' => email
+      authorize_response = JSON.parse(post('/api/v1/users.json', {
+        'user[email]' => email,
+        'request_token' => request_token.token
       }).body)
       if authorize_response['token']
         set_access_token(authorize_response['token'])

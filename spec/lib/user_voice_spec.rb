@@ -17,7 +17,8 @@ describe UserVoice do
     subject { UserVoice::Client.new(config['subdomain_name'],
                                     config['api_key'],
                                     config['api_secret'],
-                                   :uservoice_domain => config['uservoice_domain']) }
+                                   :uservoice_domain => config['uservoice_domain'],
+                                   :protocol => config['protocol']) }
 
     it "should get users from the API" do
       users_json = subject.get("/api/v1/users.json?per_page=3").body
@@ -45,7 +46,8 @@ describe UserVoice do
       new_client = UserVoice::Client.new(config['subdomain_name'],
                                          config['api_key'],
                                          config['api_secret'],
-                                        :uservoice_domain => config['uservoice_domain'])
+                                        :uservoice_domain => config['uservoice_domain'],
+                                        :protocol => config['protocol'])
 
       new_client.set_access_token(subject.access_token_hash)
 
@@ -55,12 +57,11 @@ describe UserVoice do
     end
 
     it "should login as an owner" do
-      pending 'login_as_owner TBD'
       subject.login_as_owner
 
       user_json = subject.get("/api/v1/users/current.json").body
       user = JSON.parse(user_json)
-      user['user']['admin'].should == true
+      user['user']['roles']['owner'].should == true
     end
 
     it "should raise error with invalid email parameter" do
