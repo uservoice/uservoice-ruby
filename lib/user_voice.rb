@@ -78,7 +78,7 @@ module UserVoice
       unless email.to_s.match(EMAIL_FORMAT)
         raise Unauthorized.new("'#{email}' is not a valid email address")
       end
-      authorize_response = JSON.parse(post('/api/v1/users/find_or_create.json', {
+      authorize_response = JSON.parse(post('/api/v1/users/login_as.json', {
         'user[email]' => email,
         'request_token' => request_token.token
       }).body)
