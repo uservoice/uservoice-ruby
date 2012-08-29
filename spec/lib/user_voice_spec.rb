@@ -49,7 +49,7 @@ describe UserVoice do
                                         :uservoice_domain => config['uservoice_domain'],
                                         :protocol => config['protocol'])
 
-      new_client.set_access_token(subject.access_token_hash)
+      new_client.push_access_token(subject.to_access_token_hash)
 
       user_json = new_client.get("/api/v1/users/current.json").body
       user = JSON.parse(user_json)
@@ -62,6 +62,35 @@ describe UserVoice do
       user_json = subject.get("/api/v1/users/current.json").body
       user = JSON.parse(user_json)
       user['user']['roles']['owner'].should == true
+    end
+
+    it "should not be able to delete owner" do
+      subject.login_as_owner
+
+      user_json = subject.get("/api/v1/users/current.json").body
+      owner_id = JSON.parse(user_json)['user']['id']
+
+      user_json = subject.delete("/api/v1/users/#{owner_id}.json").body
+      JSON.parse(user_json)['errors']['message'].should match(/Cannot delete admins/i)
+    end
+
+    it "should be able to delete random user and login as him after that" do
+      user_id = nil
+
+      subject.login_as('somebodythere@example.com') do
+        user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
+      end
+
+      subject.login_as_owner do
+        user_json = subject.delete("/api/v1/users/#{user_id}.json").body
+        JSON.parse(user_json)['user']['id'].should == user_id
+
+
+        subject.login_as('somebodythere@example.com') do
+          JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id'].should == user_id
+        end
+      end
+
     end
 
     it "should raise error with invalid email parameter" do
