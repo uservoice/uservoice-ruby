@@ -54,7 +54,7 @@ Making 2-Legged API calls as a user
 
 It is also possible to make calls as any user. Method login\_as constructs SSO token in the background.
 
-    uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :sso_key => SSO_KEY)
+    uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
     uservoice_client.login_as('mailaddress@example.com')
 
     # Example request: Get current user.
