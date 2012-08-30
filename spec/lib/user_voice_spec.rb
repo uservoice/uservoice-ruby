@@ -33,6 +33,13 @@ describe UserVoice do
       user['errors']['type'].should == 'unauthorized'
     end
 
+    it "should not be able to create KB article as nobody" do
+      response = subject.post("/api/v1/articles.json", :article => {
+        :title => 'good morning'
+      }).body
+      JSON.parse(response)['errors']['type'].should == 'unauthorized'
+    end
+
     it "should get current user with 2-legged call" do
       subject.login_as('mailaddress@example.com')
       user_json = subject.get("/api/v1/users/current.json").body
