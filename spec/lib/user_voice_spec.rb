@@ -79,6 +79,14 @@ describe UserVoice do
       JSON.parse(user_json)['errors']['message'].should match(/Cannot delete admins/i)
     end
 
+    it "should not be able to delete any user as random user" do
+      subject.login_as('somebodythere@example.com')
+      user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
+
+      subject.login_as('somerandomdude@example.com')
+      JSON.parse(subject.delete("/api/v1/users/#{user_id}.json").body)['errors']['message'].should match(/cannot delete/i)
+    end
+
     it "should be able to delete random user and login as him after that" do
       subject.login_as('somebodythere@example.com')
       user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
