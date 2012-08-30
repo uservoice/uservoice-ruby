@@ -42,23 +42,31 @@ Then just start making requests like the example below demonstrates.
     require 'uservoice'
     uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
-    # In 2-legged calls we are not making request on behalf of any user, so we can start making requests right away
+    # Here we don't need to make requests on behalf of any user
 
     users_json = uservoice_client.get("/api/v1/users.json?per_page=3").body
     JSON.parse(users_json)['users'].each do |user_hash|
       puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
     end
 
-Making 2-Legged API calls as a user
------------------------------------
+Making API calls as a user
+--------------------------
 
 It is also possible to make calls as any user. Method login\_as constructs SSO token in the background.
 
     uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
+
+    # login as mailaddress@example.com, a normal user
     uservoice_client.login_as('mailaddress@example.com')
 
     # Example request: Get current user.
+    response = uservoice_client.get("/api/v1/users/current.json").body
+    user_hash = JSON.parse(response)['user']
 
+    # login as account owner
+    uservoice_client.login_as_owner
+
+    # Example request: Get current user.
     response = uservoice_client.get("/api/v1/users/current.json").body
     user_hash = JSON.parse(response)['user']
 
