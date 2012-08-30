@@ -75,22 +75,17 @@ describe UserVoice do
     end
 
     it "should be able to delete random user and login as him after that" do
-      user_id = nil
+      subject.login_as('somebodythere@example.com')
 
-      subject.login_as('somebodythere@example.com') do
-        user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
-      end
+      user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
 
-      subject.login_as_owner do
-        user_json = subject.delete("/api/v1/users/#{user_id}.json").body
-        JSON.parse(user_json)['user']['id'].should == user_id
+      subject.login_as_owner
 
+      JSON.parse(subject.delete("/api/v1/users/#{user_id}.json").body)['user']['id'].should == user_id
+      JSON.parse(subject.get("/api/v1/users/#{user_id}.json").body)['errors']['type'].should == 'record_not_found'
 
-        subject.login_as('somebodythere@example.com') do
-          JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id'].should == user_id
-        end
-      end
-
+      subject.login_as('somebodythere@example.com')
+      JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id'].should == user_id
     end
 
     it "should raise error with invalid email parameter" do

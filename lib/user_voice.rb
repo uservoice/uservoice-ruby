@@ -35,7 +35,6 @@ module UserVoice
         :site => "#{attrs[:protocol] || 'https'}://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
       })
       @consumer_token = OAuth::AccessToken.new(@consumer)
-      @access_tokens = []
       push_access_token(attrs[:access_token]) if attrs[:access_token]
     end
 
@@ -51,33 +50,28 @@ module UserVoice
       access_token = OAuth::AccessToken.new(@consumer)
       access_token.token = attrs[:oauth_token] || attrs['oauth_token']
       access_token.secret = attrs[:oauth_token_secret] || attrs['oauth_token_secret']
-      @access_tokens.push(access_token)
+      @access_token = access_token
     end
 
     def to_access_token_hash
       {
-       :oauth_token => @access_tokens.last.token,
-       :oauth_token_secret => @access_tokens.last.secret
-      } if @access_tokens.last
+       :oauth_token => @access_token.token,
+       :oauth_token_secret => @access_token.secret
+      } if @access_token
     end
 
 
-    def pop_access_token
-      @access_tokens.pop
+    def logout
+      @access_token = nil
     end
-
-    alias logout pop_access_token
 
     def login_as_owner
+      logout
       authorize_response = JSON.parse(post('/api/v1/users/login_as_owner.json', {
         'request_token' => request_token.token
       }).body)
       if authorize_response['token']
         push_access_token(authorize_response['token'])
-        if block_given?
-          yield
-          pop_access_token
-        end
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
@@ -87,23 +81,20 @@ module UserVoice
       unless email.to_s.match(EMAIL_FORMAT)
         raise Unauthorized.new("'#{email}' is not a valid email address")
       end
+      logout
       authorize_response = JSON.parse(post('/api/v1/users/login_as.json', {
         'user[email]' => email,
         'request_token' => request_token.token
       }).body)
       if authorize_response['token']
         push_access_token(authorize_response['token'])
-        if block_given?
-          yield
-          pop_access_token
-        end
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
     end
 
     def request(*args)
-      (@access_tokens.last || @consumer_token).request(*args)
+      (@access_token || @consumer_token).request(*args)
     end
 
     %w(get post delete put).each do |method|
