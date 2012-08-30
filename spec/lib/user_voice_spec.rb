@@ -64,6 +64,11 @@ describe UserVoice do
       user['user']['roles']['owner'].should == true
     end
 
+    it "should not be able to delete when not deleting behalf of anyone" do
+      user_json = subject.delete("/api/v1/users/#{234}.json").body
+      JSON.parse(user_json)['errors']['message'].should match(/user required/i)
+    end
+
     it "should not be able to delete owner" do
       subject.login_as_owner
 
