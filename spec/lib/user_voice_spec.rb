@@ -76,11 +76,9 @@ describe UserVoice do
 
     it "should be able to delete random user and login as him after that" do
       subject.login_as('somebodythere@example.com')
-
       user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
 
       subject.login_as_owner
-
       JSON.parse(subject.delete("/api/v1/users/#{user_id}.json").body)['user']['id'].should == user_id
       JSON.parse(subject.get("/api/v1/users/#{user_id}.json").body)['errors']['type'].should == 'record_not_found'
 
