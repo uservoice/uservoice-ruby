@@ -62,7 +62,7 @@ module UserVoice
 
 
     def logout
-      @access_token = nil
+      @request_token = @access_token = nil
     end
 
     def login_as_owner
