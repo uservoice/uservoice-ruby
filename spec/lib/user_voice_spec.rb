@@ -40,6 +40,18 @@ describe UserVoice do
       JSON.parse(response)['errors']['type'].should == 'unauthorized'
     end
 
+    it "should be able to create and delete a forum as the owner" do
+      subject.login_as_owner
+      response = subject.post("/api/v1/forums.json", :forum => {
+        :name => 'Test forum from RSpec'
+      }).body
+      forum_id = JSON.parse(response)['forum']['id']
+      forum_id.should be_a(Integer)
+
+      response = subject.delete("/api/v1/forums/#{forum_id}.json").body
+      JSON.parse(response)['forum']['id'].should == forum_id
+    end
+
     it "should get current user with 2-legged call" do
       subject.login_as('mailaddress@example.com')
       user_json = subject.get("/api/v1/users/current.json").body

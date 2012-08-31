@@ -5,6 +5,7 @@ require 'json'
 require 'cgi'
 require 'base64'
 require 'oauth'
+require 'uri_parameters'
 
 module UserVoice
   EMAIL_FORMAT = %r{^(\w[-+.\w!\#\$%&'\*\+\-/=\?\^_`\{\|\}~]*@([-\w]*\.)+[a-zA-Z]{2,9})$}
@@ -93,8 +94,9 @@ module UserVoice
       end
     end
 
-    def request(*args)
-      (@access_token || @consumer_token).request(*args)
+    def request(method, uri, params={}, *args)
+      flatten_params = UriParameters.concat_keys_to_params(params)
+      (@access_token || @consumer_token).request(method, uri, flatten_params, *args)
     end
 
     %w(get post delete put).each do |method|
