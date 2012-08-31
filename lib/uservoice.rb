@@ -1,1 +1,1 @@
-require 'user_voice'
+require 'uservoice/user_voice'

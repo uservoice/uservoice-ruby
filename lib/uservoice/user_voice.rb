@@ -1,11 +1,11 @@
 require "uservoice/version"
+require 'uservoice/uri_parameters'
 require 'rubygems'
 require 'ezcrypto'
 require 'json'
 require 'cgi'
 require 'base64'
 require 'oauth'
-require 'uri_parameters'
 
 module UserVoice
   EMAIL_FORMAT = %r{^(\w[-+.\w!\#\$%&'\*\+\-/=\?\^_`\{\|\}~]*@([-\w]*\.)+[a-zA-Z]{2,9})$}
