@@ -84,7 +84,7 @@ your site permission to access his or her data in UserVoice.
 ```ruby
 CALLBACK_URL = 'http://localhost:3000/' # your site
 
-uservoice_client = Uservoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
+uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
 
 # At this point you want to print/redirect to uservoice_client.authorize_url in your application.
 # Here we just output them as this is a command-line example.
