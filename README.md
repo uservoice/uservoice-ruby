@@ -69,9 +69,9 @@ It is also possible to make calls as any user. Method login\_as constructs SSO t
     # Example request: Create a new private forum limited to only example.com email domain.
     response = subject.post("/api/v1/forums.json", :forum => {
       :name => 'Example.com Private Feedback',
-      'private' => true,
-      'allow_by_email_domain' => true,
-      'allowed_email_domains' => [{'domain' => 'example.com'}]
+      :private => true,
+      :allow_by_email_domain => true,
+      :allowed_email_domains => [{:domain => 'example.com'}]
     }).body
     forum = JSON.parse(response)['forum']
 
