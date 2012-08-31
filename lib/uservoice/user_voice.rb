@@ -31,6 +31,7 @@ module UserVoice
   class Client
     def initialize(subdomain_name, api_key, api_secret, attrs={})
       @subdomain_name = subdomain_name
+      @response_format = attrs[:response_format] || :hash
       @callback = attrs[:callback]
       @consumer = OAuth::Consumer.new(api_key, api_secret, { 
         :site => "#{attrs[:protocol] || 'https'}://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
@@ -75,9 +76,9 @@ module UserVoice
 
     def login_as_owner
       logout
-      authorize_response = JSON.parse(post('/api/v1/users/login_as_owner.json', {
+      authorize_response = post('/api/v1/users/login_as_owner.json', {
         'request_token' => request_token.token
-      }).body)
+      })
       if authorize_response['token']
         self.access_token_attributes = authorize_response['token']
       else
@@ -90,10 +91,10 @@ module UserVoice
         raise Unauthorized.new("'#{email}' is not a valid email address")
       end
       logout
-      authorize_response = JSON.parse(post('/api/v1/users/login_as.json', {
+      authorize_response = post('/api/v1/users/login_as.json', {
         'user[email]' => email,
         'request_token' => request_token.token
-      }).body)
+      })
       if authorize_response['token']
         self.access_token_attributes = authorize_response['token']
       else
@@ -107,7 +108,16 @@ module UserVoice
 
     def request(method, uri, params={}, *args)
       flatten_params = UriParameters.concat_keys_to_params(params)
-      (@access_token || @consumer_token).request(method, uri, flatten_params, *args)
+      response = (@access_token || @consumer_token).request(method, uri, flatten_params, *args)
+
+      case @response_format.to_s
+      when 'raw'
+        response
+      when 'json'
+        response.body
+      else
+        JSON.parse(response.body)
+      end
     end
 
     %w(get post delete put).each do |method|

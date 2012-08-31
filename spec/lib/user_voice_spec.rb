@@ -20,45 +20,43 @@ describe UserVoice do
                                    :uservoice_domain => config['uservoice_domain'],
                                    :protocol => config['protocol']) }
 
-    it "should get users from the API" do
-      users_json = subject.get("/api/v1/users.json?per_page=3").body
-      users = JSON.parse(users_json)['users'].map { |user| user['name'] }
-      users.all?.should == true
-      users.size.should == 3
+    it "should get user names from the API" do
+      users = subject.get("/api/v1/users.json?per_page=3")
+      user_names = users['users'].map { |user| user['name'] }
+      user_names.all?.should == true
+      user_names.size.should == 3
     end
 
     it "should not get current user with 2-legged call" do
-      user_json = subject.get("/api/v1/users/current.json").body
-      user = JSON.parse(user_json)
+      user = subject.get("/api/v1/users/current.json")
       user['errors']['type'].should == 'unauthorized'
     end
 
     it "should not be able to create KB article as nobody" do
-      response = subject.post("/api/v1/articles.json", :article => {
+      result = subject.post("/api/v1/articles.json", :article => {
         :title => 'good morning'
-      }).body
-      JSON.parse(response)['errors']['type'].should == 'unauthorized'
+      })
+      result['errors']['type'].should == 'unauthorized'
     end
 
     it "should be able to create and delete a forum as the owner" do
       subject.login_as_owner
-      response = subject.post("/api/v1/forums.json", :forum => {
+      forum = subject.post("/api/v1/forums.json", :forum => {
         :name => 'Test forum from RSpec',
         'private' => true,
         'allow_by_email_domain' => true,
         'allowed_email_domains' => [{'domain' => 'raimo.rspec.example.com'}]
-      }).body
-      forum_id = JSON.parse(response)['forum']['id']
-      forum_id.should be_a(Integer)
+      })['forum']
 
-      response = subject.delete("/api/v1/forums/#{forum_id}.json").body
-      JSON.parse(response)['forum']['id'].should == forum_id
+      forum['id'].should be_a(Integer)
+
+      deleted_forum = subject.delete("/api/v1/forums/#{forum['id']}.json")['forum']
+      deleted_forum['id'].should == forum['id']
     end
 
     it "should get current user with 2-legged call" do
       subject.login_as('mailaddress@example.com')
-      user_json = subject.get("/api/v1/users/current.json").body
-      user = JSON.parse(user_json)
+      user = subject.get("/api/v1/users/current.json")
       user['user']['email'].should == 'mailaddress@example.com'
     end
 
@@ -73,61 +71,58 @@ describe UserVoice do
 
       new_client.access_token_attributes = subject.access_token_attributes
 
-      user_json = new_client.get("/api/v1/users/current.json").body
-      user = JSON.parse(user_json)
+      user = new_client.get("/api/v1/users/current.json")
       user['user']['email'].should == 'mailaddress@example.com'
     end
 
     it "should login as an owner" do
       subject.login_as_owner
 
-      user_json = subject.get("/api/v1/users/current.json").body
-      user = JSON.parse(user_json)
-      user['user']['roles']['owner'].should == true
+      owner = subject.get("/api/v1/users/current.json")['user']
+      owner['roles']['owner'].should == true
     end
 
     it "should not be able to delete when not deleting behalf of anyone" do
-      user_json = subject.delete("/api/v1/users/#{234}.json").body
-      JSON.parse(user_json)['errors']['message'].should match(/user required/i)
+      result = subject.delete("/api/v1/users/#{234}.json")
+      result['errors']['message'].should match(/user required/i)
     end
 
     it "should not be able to delete owner" do
       subject.login_as_owner
 
-      user_json = subject.get("/api/v1/users/current.json").body
-      owner_id = JSON.parse(user_json)['user']['id']
+      owner = subject.get("/api/v1/users/current.json")['user']
 
-      user_json = subject.delete("/api/v1/users/#{owner_id}.json").body
-      JSON.parse(user_json)['errors']['message'].should match(/Cannot delete admins/i)
+      result = subject.delete("/api/v1/users/#{owner['id']}.json")
+      result['errors']['message'].should match(/Cannot delete admins/i)
     end
 
     it "should not be able to delete any user as random user" do
       subject.login_as('somebodythere@example.com')
-      user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
+      regular_user = subject.get("/api/v1/users/current.json")['user']
 
       subject.login_as('somerandomdude@example.com')
-      JSON.parse(subject.delete("/api/v1/users/#{user_id}.json").body)['errors']['message'].should match(/cannot delete/i)
+      subject.delete("/api/v1/users/#{regular_user['id']}.json")['errors']['message'].should match(/cannot delete/i)
     end
 
     it "should be able to delete himself" do
       subject.login_as('somebodythere@example.com')
-      my_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
+      me = subject.get("/api/v1/users/current.json")['user']
 
-      JSON.parse(subject.delete("/api/v1/users/#{my_id}.json").body)['user']['id'].should == my_id
+      subject.delete("/api/v1/users/#{me['id']}.json")['user']['id'].should == me['id']
 
-      JSON.parse(subject.get("/api/v1/users/current.json").body)['errors']['type'].should == 'record_not_found'
+      subject.get("/api/v1/users/current.json")['errors']['type'].should == 'record_not_found'
     end
 
     it "should be able to delete random user and login as him after that" do
       subject.login_as('somebodythere@example.com')
-      user_id = JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id']
+      regular_user = subject.get("/api/v1/users/current.json")['user']
 
       subject.login_as_owner
-      JSON.parse(subject.delete("/api/v1/users/#{user_id}.json").body)['user']['id'].should == user_id
-      JSON.parse(subject.get("/api/v1/users/#{user_id}.json").body)['errors']['type'].should == 'record_not_found'
+      subject.delete("/api/v1/users/#{regular_user['id']}.json")['user']['id'].should == regular_user['id']
+      subject.get("/api/v1/users/#{regular_user['id']}.json")['errors']['type'].should == 'record_not_found'
 
       subject.login_as('somebodythere@example.com')
-      JSON.parse(subject.get("/api/v1/users/current.json").body)['user']['id'].should == user_id
+      subject.get("/api/v1/users/current.json")['user']['id'].should == regular_user['id']
     end
 
     it "should raise error with invalid email parameter" do

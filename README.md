@@ -46,8 +46,8 @@ require 'uservoice'
 uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
 # Get users of a subdomain (requires trusted client, but no user)
-users_json = uservoice_client.get("/api/v1/users.json?per_page=3").body
-JSON.parse(users_json)['users'].each do |user_hash|
+users = uservoice_client.get("/api/v1/users.json?per_page=3")['users']
+users.each do |user_hash|
   puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
 end
 
@@ -55,22 +55,20 @@ end
 uservoice_client.login_as('mailaddress@example.com')
 
 # Example request #1: Get current user.
-response = uservoice_client.get("/api/v1/users/current.json").body
-user_hash = JSON.parse(response)['user']
+user = uservoice_client.get("/api/v1/users/current.json")['user']
 
-puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
+puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
 
 # Login as account owner
 uservoice_client.login_as_owner
 
 # Example request #2: Create a new private forum limited to only example.com email domain.
-response = subject.post("/api/v1/forums.json", :forum => {
+forum = subject.post("/api/v1/forums.json", :forum => {
   :name => 'Example.com Private Feedback',
   :private => true,
   :allow_by_email_domain => true,
   :allowed_email_domains => [{:domain => 'example.com'}]
-}).body
-forum = JSON.parse(response)['forum']
+})
 
 puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
 ```
@@ -98,9 +96,8 @@ puts "2. Then type the oauth_verifier which is passed as a GET parameter to the 
 uservoice_client.login_verified_user(gets.match('\w*').to_s)
 
 # All done. Now we can read the current user to know user's email address:
-response = uservoice_client.get("/api/v1/users/current.json").body
-user_hash = JSON.parse(response)['user']
+user = uservoice_client.get("/api/v1/users/current.json")['user']
 
-puts "User logged in, Name: #{user_hash['name']}, email: #{user_hash['email']}"
+puts "User logged in, Name: #{user['name']}, email: #{user['email']}"
 ```
 
