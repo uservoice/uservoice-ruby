@@ -36,7 +36,7 @@ module UserVoice
         :site => "#{attrs[:protocol] || 'https'}://#{@subdomain_name}.#{attrs[:uservoice_domain] || 'uservoice.com'}"
       })
       @consumer_token = OAuth::AccessToken.new(@consumer)
-      push_access_token(attrs[:access_token]) if attrs[:access_token]
+      self.access_token_attributes = attrs[:access_token] if attrs[:access_token]
     end
 
     def request_token
@@ -47,20 +47,27 @@ module UserVoice
       request_token.authorize_url
     end
 
-    def push_access_token(attrs)
+    def access_token_attributes=(attrs)
       access_token = OAuth::AccessToken.new(@consumer)
       access_token.token = attrs[:oauth_token] || attrs['oauth_token']
       access_token.secret = attrs[:oauth_token_secret] || attrs['oauth_token_secret']
       @access_token = access_token
     end
 
-    def to_access_token_hash
+    def access_token
+      @access_token
+    end
+
+    def access_token_attributes
       {
        :oauth_token => @access_token.token,
        :oauth_token_secret => @access_token.secret
       } if @access_token
     end
 
+    def login_verified_user(oauth_verifier)
+      @access_token = request_token.get_access_token(:oauth_verifier => oauth_verifier)
+    end
 
     def logout
       @request_token = @access_token = nil
@@ -72,7 +79,7 @@ module UserVoice
         'request_token' => request_token.token
       }).body)
       if authorize_response['token']
-        push_access_token(authorize_response['token'])
+        self.access_token_attributes = authorize_response['token']
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
@@ -88,10 +95,14 @@ module UserVoice
         'request_token' => request_token.token
       }).body)
       if authorize_response['token']
-        push_access_token(authorize_response['token'])
+        self.access_token_attributes = authorize_response['token']
       else
         raise Unauthorized.new("Could not get Access Token: #{authorize_response}")
       end
+    end
+
+    def logged_in?
+      !!@access_token
     end
 
     def request(method, uri, params={}, *args)

@@ -71,7 +71,7 @@ describe UserVoice do
                                         :uservoice_domain => config['uservoice_domain'],
                                         :protocol => config['protocol'])
 
-      new_client.push_access_token(subject.to_access_token_hash)
+      new_client.access_token_attributes = subject.access_token_attributes
 
       user_json = new_client.get("/api/v1/users/current.json").body
       user = JSON.parse(user_json)

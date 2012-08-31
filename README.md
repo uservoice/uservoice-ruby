@@ -34,46 +34,36 @@ sso_token = UserVoice.generate_sso_token(USERVOICE_SUBDOMAIN, SSO_KEY, {
 puts "https://#{USERVOICE_SUBDOMAIN}.uservoice.com/?sso=#{sso_token}"
 ```
 
-Making 2-Legged API calls
--------------------------
+Making API calls
+----------------
 
-Managing backups and extracting all the users of a UserVoice subdomain are typical use cases for making 2-legged API calls. With the help
-of the gem you just need to create an instance of UserVoice::Oauth (needs an API client, see Admin Console -> Settings -> Channels -> API).
-Then just start making requests like the example below demonstrates.
+With the gem you need to create an instance of UserVoice::Oauth. You get
+API_KEY and API_SECRET from an API client which you can create in Admin Console
+-> Settings -> Channels -> API.
 
 ```ruby
 require 'uservoice'
 uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
-# Here we don't need to make requests on behalf of any user
-
+# Get users of a subdomain (requires trusted client, but no user)
 users_json = uservoice_client.get("/api/v1/users.json?per_page=3").body
 JSON.parse(users_json)['users'].each do |user_hash|
   puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
 end
-```
 
-Making API calls as a user
---------------------------
-
-It is also possible to make calls as any user. Method login\_as constructs SSO token in the background.
-
-```ruby
-uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
-
-# login as mailaddress@example.com, a normal user
+# Now, let's login as mailaddress@example.com, a regular user
 uservoice_client.login_as('mailaddress@example.com')
 
-# Example request: Get current user.
+# Example request #1: Get current user.
 response = uservoice_client.get("/api/v1/users/current.json").body
 user_hash = JSON.parse(response)['user']
 
 puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
 
-# login as account owner
+# Login as account owner
 uservoice_client.login_as_owner
 
-# Example request: Create a new private forum limited to only example.com email domain.
+# Example request #2: Create a new private forum limited to only example.com email domain.
 response = subject.post("/api/v1/forums.json", :forum => {
   :name => 'Example.com Private Feedback',
   :private => true,
@@ -85,14 +75,16 @@ forum = JSON.parse(response)['forum']
 puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
 ```
 
-Making 3-Legged API calls
--------------------------
+Verifying a UserVoice user
+--------------------------
 
-If you want to make calls on behalf of a user, you need 3-legged API calls. It basically requires you to pass a link to UserVoice, where
-user grants your site permission to access his or her data in his or her account
+If you want to make calls on behalf of a user, but want to make sure he or she
+actually owns certain email address in UserVoice, you need to use 3-Legged API
+calls. Just pass your user an authorize link to click, so that user may grant
+your site permission to access his or her data in UserVoice.
 
 ```ruby
-CALLBACK_URL = 'http://localhost:3000/'
+CALLBACK_URL = 'http://localhost:3000/' # your site
 
 uservoice_client = Uservoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
 
@@ -103,12 +95,12 @@ puts "2. Then type the oauth_verifier which is passed as a GET parameter to the 
 
 # In a web app we would get the oauth_verifier from UserVoice (after a redirection back to CALLBACK_URL).
 # In this command-line example we just read it from stdin:
-uservoice_client.get_access_token(:oauth_verifier => gets.match('\w*').to_s)
+uservoice_client.login_verified_user(gets.match('\w*').to_s)
 
-# All done. Now we can, for example, read the current user:
+# All done. Now we can read the current user to know user's email address:
 response = uservoice_client.get("/api/v1/users/current.json").body
 user_hash = JSON.parse(response)['user']
 
-puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
+puts "User logged in, Name: #{user_hash['name']}, email: #{user_hash['email']}"
 ```
 
