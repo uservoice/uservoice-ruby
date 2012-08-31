@@ -68,6 +68,8 @@ uservoice_client.login_as('mailaddress@example.com')
 response = uservoice_client.get("/api/v1/users/current.json").body
 user_hash = JSON.parse(response)['user']
 
+puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
+
 # login as account owner
 uservoice_client.login_as_owner
 
