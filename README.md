@@ -47,8 +47,8 @@ uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRE
 
 # Get users of a subdomain (requires trusted client, but no user)
 users = uservoice_client.get("/api/v1/users.json?per_page=3")['users']
-users.each do |user_hash|
-  puts "User: \"#{user_hash['name']}\", Profile URL: #{user_hash['url']}"
+users.each do |user|
+  puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
 end
 
 # Now, let's login as mailaddress@example.com, a regular user
