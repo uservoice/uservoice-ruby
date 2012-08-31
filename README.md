@@ -66,11 +66,16 @@ It is also possible to make calls as any user. Method login\_as constructs SSO t
     # login as account owner
     uservoice_client.login_as_owner
 
-    # Example request: Get current user.
-    response = uservoice_client.get("/api/v1/users/current.json").body
-    user_hash = JSON.parse(response)['user']
+    # Example request: Create a new private forum limited to only example.com email domain.
+    response = subject.post("/api/v1/forums.json", :forum => {
+      :name => 'Example.com Private Feedback',
+      'private' => true,
+      'allow_by_email_domain' => true,
+      'allowed_email_domains' => [{'domain' => 'example.com'}]
+    }).body
+    forum = JSON.parse(response)['forum']
 
-    puts "User logged in, Name: #{user_hash['name']}, Profile URL: #{user_hash['url']}"
+    puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
 
 Making 3-Legged API calls
 -------------------------
