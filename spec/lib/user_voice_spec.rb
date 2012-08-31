@@ -43,7 +43,10 @@ describe UserVoice do
     it "should be able to create and delete a forum as the owner" do
       subject.login_as_owner
       response = subject.post("/api/v1/forums.json", :forum => {
-        :name => 'Test forum from RSpec'
+        :name => 'Test forum from RSpec',
+        'private' => true,
+        'allow_by_email_domain' => true,
+        'allowed_email_domains' => [{'domain' => 'raimo.rspec.example.com'}]
       }).body
       forum_id = JSON.parse(response)['forum']['id']
       forum_id.should be_a(Integer)
