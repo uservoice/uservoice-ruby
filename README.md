@@ -91,7 +91,7 @@ uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRE
 puts "1. Go to #{uservoice_client.authorize_url} and click \"Allow access\"."
 puts "2. Then type the oauth_verifier which is passed as a GET parameter to the callback URL:"
 
-# In a web app we would get the oauth_verifier from UserVoice (after a redirection back to CALLBACK_URL).
+# In a web app we would get the oauth_verifier through a redirect from UserVoice (after a redirection back to CALLBACK_URL).
 # In this command-line example we just read it from stdin:
 uservoice_client.login_verified_user(gets.match('\w*').to_s)
 
