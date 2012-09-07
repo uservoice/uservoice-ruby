@@ -10,7 +10,7 @@ Installation
 
 Place this in your Gemfile:
 ```ruby
-gem 'uservoice', :git => 'http://github.com/uservoice/uservoice-ruby'
+gem 'uservoice', :git => 'https://github.com/uservoice/uservoice-ruby'
 ```
 Run the bundle command and then try one of the examples below.
 
