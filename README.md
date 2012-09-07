@@ -5,6 +5,15 @@ This gem allows you to easily:
 * Generate SSO token for creating SSO users / logging them into UserVoice (http://uservoice.com).
 * Do 3-legged and 2-legged UserVoice API calls safely without having to worry about the cryptographic details.
 
+Installation
+============
+
+Place this in your Gemfile:
+```ruby
+gem 'uservoice', :git => 'http://github.com/uservoice/uservoice-ruby'
+```
+Run the bundle command and then try one of the examples below.
+
 Examples
 ========
 
