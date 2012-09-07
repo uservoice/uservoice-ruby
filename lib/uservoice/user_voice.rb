@@ -1,5 +1,4 @@
 require "uservoice/version"
-require 'uservoice/uri_parameters'
 require 'rubygems'
 require 'ezcrypto'
 require 'json'
@@ -30,6 +29,11 @@ module UserVoice
 
   class Client
     def initialize(subdomain_name, api_key, api_secret, attrs={})
+      @default_headers = {
+        'Content-Type'=> 'application/json',
+        'Accept'=> 'application/json'
+      }
+      @default_headers.merge!(attrs[:headers]) if attrs[:headers]
       @subdomain_name = subdomain_name
       @response_format = attrs[:response_format] || :hash
       @callback = attrs[:callback]
@@ -92,8 +96,8 @@ module UserVoice
       end
       logout
       authorize_response = post('/api/v1/users/login_as.json', {
-        'user[email]' => email,
-        'request_token' => request_token.token
+        :user => { :email => email },
+        :request_token => request_token.token
       })
       if authorize_response['token']
         self.access_token_attributes = authorize_response['token']
@@ -106,18 +110,31 @@ module UserVoice
       !!@access_token
     end
 
-    def request(method, uri, params={}, *args)
-      flatten_params = UriParameters.concat_keys_to_params(params)
-      response = (@access_token || @consumer_token).request(method, uri, flatten_params, *args)
+    def request(method, uri, request_body={}, headers={})
+      headers = @default_headers.merge(headers)
 
-      case @response_format.to_s
-      when 'raw'
-        response
-      when 'json'
-        response.body
-      else
-        JSON.parse(response.body)
+      if headers['Content-Type'] == 'application/json' && request_body.is_a?(Hash)
+        request_body = request_body.to_json
       end
+
+      token = (@access_token || @consumer_token)
+      response = case method.to_sym
+                 when :post, :put
+                   token.request(method, uri, request_body, headers)
+                 when :head, :delete, :get
+                   token.request(method, uri, headers)
+                 else
+                   raise RuntimeError.new("Invalid HTTP method #{method}")
+                 end
+
+      return case @response_format.to_s
+             when 'raw'
+               response
+             when 'json'
+               response.body
+             else
+               JSON.parse(response.body)
+             end
     end
 
     %w(get post delete put).each do |method|

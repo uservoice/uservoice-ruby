@@ -104,6 +104,18 @@ describe UserVoice do
       subject.delete("/api/v1/users/#{regular_user['id']}.json")['errors']['message'].should match(/cannot delete/i)
     end
 
+    it "should be able to identify suggestions" do
+      subject.login_as_owner
+      suggestions = subject.get("/api/v1/suggestions.json")['suggestions']
+      
+      identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10 } }
+
+      ids = subject.put("/api/v1/suggestions/identify.json",
+                          :external_scope => 'raimo_ids',
+                          :identifications => identifications)['identifications']['ids']
+      ids.should == identifications.map { |s| s[:id] }.sort
+    end
+
     it "should be able to delete himself" do
       subject.login_as('somebodythere@example.com')
       me = subject.get("/api/v1/users/current.json")['user']
