@@ -63,12 +63,12 @@ puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
 uservoice_client.login_as_owner
 
 # Example request #2: Create a new private forum limited to only example.com email domain.
-forum = subject.post("/api/v1/forums.json", :forum => {
+forum = uservoice_client.post("/api/v1/forums.json", :forum => {
   :name => 'Example.com Private Feedback',
   :private => true,
   :allow_by_email_domain => true,
   :allowed_email_domains => [{:domain => 'example.com'}]
-})
+})['forum']
 
 puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
 ```
