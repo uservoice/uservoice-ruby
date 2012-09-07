@@ -82,6 +82,7 @@ calls. Just pass your user an authorize link to click, so that user may grant
 your site permission to access his or her data in UserVoice.
 
 ```ruby
+require 'uservoice'
 CALLBACK_URL = 'http://localhost:3000/' # your site
 
 uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
