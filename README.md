@@ -52,34 +52,40 @@ API_KEY and API_SECRET from an API client which you can create in Admin Console
 
 ```ruby
 require 'uservoice'
-uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
+begin
+  uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
-# Get users of a subdomain (requires trusted client, but no user)
-users = uservoice_client.get("/api/v1/users.json?per_page=3")['users']
-users.each do |user|
+  # Get users of a subdomain (requires trusted client, but no user)
+  users = uservoice_client.get("/api/v1/users.json?per_page=3")['users']
+  users.each do |user|
+    puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
+  end
+
+  # Now, let's login as mailaddress@example.com, a regular user
+  uservoice_client.login_as('mailaddress@example.com')
+
+  # Example request #1: Get current user.
+  user = uservoice_client.get("/api/v1/users/current.json")['user']
+
   puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
+
+  # Login as account owner
+  uservoice_client.login_as_owner
+
+  # Example request #2: Create a new private forum limited to only example.com email domain.
+  forum = uservoice_client.post("/api/v1/forums.json", :forum => {
+    :name => 'Example.com Private Feedback',
+    :private => true,
+    :allow_by_email_domain => true,
+    :allowed_email_domains => [{:domain => 'example.com'}]
+  })['forum']
+
+  puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
+rescue UserVoice::Unauthorized => e
+  # Thrown usually due to faulty tokens, untrusted client or if attempting
+  # operations without Admin Privileges
+  raise
 end
-
-# Now, let's login as mailaddress@example.com, a regular user
-uservoice_client.login_as('mailaddress@example.com')
-
-# Example request #1: Get current user.
-user = uservoice_client.get("/api/v1/users/current.json")['user']
-
-puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
-
-# Login as account owner
-uservoice_client.login_as_owner
-
-# Example request #2: Create a new private forum limited to only example.com email domain.
-forum = uservoice_client.post("/api/v1/forums.json", :forum => {
-  :name => 'Example.com Private Feedback',
-  :private => true,
-  :allow_by_email_domain => true,
-  :allowed_email_domains => [{:domain => 'example.com'}]
-})['forum']
-
-puts "Forum '#{forum['name']}' created! URL: #{forum['url']}"
 ```
 
 Verifying a UserVoice user

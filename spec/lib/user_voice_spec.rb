@@ -106,12 +106,13 @@ describe UserVoice do
 
     it "should be able to identify suggestions" do
       subject.login_as_owner
-      suggestions = subject.get("/api/v1/suggestions.json")['suggestions']
+      external_scope='sync_to_moon'
+      suggestions = subject.get("/api/v1/suggestions.json?filter=with_external_id&external_scope=#{external_scope}&manual_action=#{external_scope}")['suggestions']
       
       identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10 } }
 
       ids = subject.put("/api/v1/suggestions/identify.json",
-                          :external_scope => 'raimo_ids',
+                          :external_scope => external_scope,
                           :identifications => identifications)['identifications']['ids']
       ids.should == identifications.map { |s| s[:id] }.sort
     end
