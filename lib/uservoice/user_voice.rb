@@ -14,6 +14,7 @@ module UserVoice
   end
   Unauthorized = Class.new(APIError)
   NotFound = Class.new(APIError)
+  ApplicationError = Class.new(APIError)
  
   def self.generate_sso_token(subdomain_key, sso_key, user_hash, valid_for = 5 * 60)
     user_hash[:expires] ||= (Time.now.utc + valid_for).to_s unless valid_for.nil?
@@ -141,7 +142,7 @@ module UserVoice
                  when 'record_not_found'
                    raise NotFound.new(attrs)
                  when 'application_error'
-                   raise NotFound.new(attrs)
+                   raise ApplicationError.new(attrs)
                  else
                    raise APIError.new(attrs)
                  end
