@@ -87,9 +87,13 @@ describe UserVoice do
                                    config['api_key'],
                                    config['api_secret'],
                                   :uservoice_domain => config['uservoice_domain'],
-                                  :protocol => config['protocol'])
-      token = client.login_with_access_token(original_token.token, original_token.secret)
-      user = token.get("/api/v1/users/current.json")['user']
+                                  :protocol => config['protocol'],
+                                  :oauth_token => original_token.token,
+                                  :oauth_token_secret => original_token.secret)
+      # Also this works but creates an extra object:
+      # client = client.login_with_access_token(original_token.token, original_token.secret)
+
+      user = client.get("/api/v1/users/current.json")['user']
 
       user['email'].should == 'mailaddress@example.com'
     end
