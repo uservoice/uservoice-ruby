@@ -27,21 +27,39 @@ describe UserVoice do
       user_names.size.should == 3
     end
 
-    it "should not get current user with 2-legged call" do
-      user = subject.get("/api/v1/users/current.json")
-      user['errors']['type'].should == 'unauthorized'
+    it "should not get current user without logged in user" do
+      lambda do
+        user = subject.get("/api/v1/users/current.json")
+      end.should raise_error(UserVoice::Unauthorized)
+    end
+
+    it "should be able to get access token as owner" do
+      subject.login_as_owner do |owner|
+        owner.get("/api/v1/users/current.json")['user']['roles']['owner'].should == true
+
+        owner.login_as('regular@example.com') do |regular|
+          owner.get("/api/v1/users/current.json")['user']['roles']['owner'].should == true
+          @user = regular.get("/api/v1/users/current.json")['user']
+          @user['roles']['owner'].should == false
+        end
+
+        owner.get("/api/v1/users/current.json")['user']['roles']['owner'].should == true
+      end
+      # ensure blocks got run
+      @user['email'].should == 'regular@example.com'
     end
 
     it "should not be able to create KB article as nobody" do
-      result = subject.post("/api/v1/articles.json", :article => {
-        :title => 'good morning'
-      })
-      result['errors']['type'].should == 'unauthorized'
+      lambda do
+        result = subject.post("/api/v1/articles.json", :article => {
+          :title => 'good morning'
+        })
+      end.should raise_error(UserVoice::Unauthorized)
     end
 
     it "should be able to create and delete a forum as the owner" do
-      subject.login_as_owner
-      forum = subject.post("/api/v1/forums.json", :forum => {
+      owner = subject.login_as_owner
+      forum = owner.post("/api/v1/forums.json", :forum => {
         :name => 'Test forum from RSpec',
         'private' => true,
         'allow_by_email_domain' => true,
@@ -50,92 +68,110 @@ describe UserVoice do
 
       forum['id'].should be_a(Integer)
 
-      deleted_forum = subject.delete("/api/v1/forums/#{forum['id']}.json")['forum']
+      deleted_forum = owner.delete("/api/v1/forums/#{forum['id']}.json")['forum']
       deleted_forum['id'].should == forum['id']
     end
 
     it "should get current user with 2-legged call" do
-      subject.login_as('mailaddress@example.com')
-      user = subject.get("/api/v1/users/current.json")
-      user['user']['email'].should == 'mailaddress@example.com'
+      user = subject.login_as('mailaddress@example.com') do |token|
+        token.get("/api/v1/users/current.json")['user']
+      end
+
+      user['email'].should == 'mailaddress@example.com'
     end
 
     it "should get current user with copied access token" do
-      subject.login_as('mailaddress@example.com')
+      original_token = subject.login_as('mailaddress@example.com')
 
-      new_client = UserVoice::Client.new(config['subdomain_name'],
-                                         config['api_key'],
-                                         config['api_secret'],
-                                        :uservoice_domain => config['uservoice_domain'],
-                                        :protocol => config['protocol'])
+      client = UserVoice::Client.new(config['subdomain_name'],
+                                   config['api_key'],
+                                   config['api_secret'],
+                                  :uservoice_domain => config['uservoice_domain'],
+                                  :protocol => config['protocol'])
+      token = client.login_with_access_token(original_token.token, original_token.secret)
+      user = token.get("/api/v1/users/current.json")['user']
 
-      new_client.access_token_attributes = subject.access_token_attributes
-
-      user = new_client.get("/api/v1/users/current.json")
-      user['user']['email'].should == 'mailaddress@example.com'
+      user['email'].should == 'mailaddress@example.com'
     end
 
     it "should login as an owner" do
-      subject.login_as_owner
+      me = subject.login_as_owner
 
-      owner = subject.get("/api/v1/users/current.json")['user']
+      owner = me.get("/api/v1/users/current.json")['user']
       owner['roles']['owner'].should == true
     end
 
-    it "should not be able to delete when not deleting behalf of anyone" do
-      result = subject.delete("/api/v1/users/#{234}.json")
-      result['errors']['message'].should match(/user required/i)
+    it "should not be able to delete when not deleting on behalf of anyone" do
+      lambda {
+        result = subject.delete("/api/v1/users/#{234}.json")
+      }.should raise_error(UserVoice::Unauthorized, /user required/i)
     end
 
     it "should not be able to delete owner" do
-      subject.login_as_owner
+      owner_access_token = subject.login_as_owner
 
-      owner = subject.get("/api/v1/users/current.json")['user']
+      owner = owner_access_token.get("/api/v1/users/current.json")['user']
 
-      result = subject.delete("/api/v1/users/#{owner['id']}.json")
-      result['errors']['message'].should match(/Cannot delete admins/i)
+      lambda {
+        result = owner_access_token.delete("/api/v1/users/#{owner['id']}.json")
+      }.should raise_error(UserVoice::Unauthorized, /last owner/i)
     end
 
     it "should not be able to delete any user as random user" do
-      subject.login_as('somebodythere@example.com')
-      regular_user = subject.get("/api/v1/users/current.json")['user']
+      regular_user = subject.login_as('somebodythere@example.com').get("/api/v1/users/current.json")['user']
 
-      subject.login_as('somerandomdude@example.com')
-      subject.delete("/api/v1/users/#{regular_user['id']}.json")['errors']['message'].should match(/cannot delete/i)
+      lambda {
+        subject.delete("/api/v1/users/#{regular_user['id']}.json")
+      }.should raise_error(UserVoice::Unauthorized)
     end
 
     it "should be able to identify suggestions" do
-      subject.login_as_owner
+      owner_token = subject.login_as_owner
       external_scope='sync_to_moon'
-      suggestions = subject.get("/api/v1/suggestions.json?filter=with_external_id&external_scope=#{external_scope}&manual_action=#{external_scope}")['suggestions']
-      
+      suggestions = owner_token.get("/api/v1/suggestions.json?filter=with_external_id&external_scope=#{external_scope}&manual_action=#{external_scope}")['suggestions']
+
       identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10 } }
 
-      ids = subject.put("/api/v1/suggestions/identify.json",
+      ids = owner_token.put("/api/v1/suggestions/identify.json",
                           :external_scope => external_scope,
                           :identifications => identifications)['identifications']['ids']
       ids.should == identifications.map { |s| s[:id] }.sort
     end
 
-    it "should be able to delete himself" do
-      subject.login_as('somebodythere@example.com')
-      me = subject.get("/api/v1/users/current.json")['user']
+    it "should be able to delete itself" do
+      my_token = subject.login_as('somebodythere@example.com')
 
-      subject.delete("/api/v1/users/#{me['id']}.json")['user']['id'].should == me['id']
+      # whoami
+      my_id = my_token.get("/api/v1/users/current.json")['user']['id']
 
-      subject.get("/api/v1/users/current.json")['errors']['type'].should == 'record_not_found'
+      # Delete myself!
+      my_token.delete("/api/v1/users/#{my_id}.json")['user']['id'].should == my_id
+
+      # I don't exist anymore
+      lambda {
+        my_token.get("/api/v1/users/current.json")
+      }.should raise_error(UserVoice::NotFound)
     end
 
-    it "should be able to delete random user and login as him after that" do
-      subject.login_as('somebodythere@example.com')
-      regular_user = subject.get("/api/v1/users/current.json")['user']
+    it "should/be able to delete random user and login as him after that" do
+      somebody = subject.login_as('somebodythere@example.com')
+      owner = subject.login_as_owner
 
-      subject.login_as_owner
-      subject.delete("/api/v1/users/#{regular_user['id']}.json")['user']['id'].should == regular_user['id']
-      subject.get("/api/v1/users/#{regular_user['id']}.json")['errors']['type'].should == 'record_not_found'
+      # somebody is still there...
+      regular_user = somebody.get("/api/v1/users/current.json")['user']
+      regular_user['email'].should == 'somebodythere@example.com'
 
-      subject.login_as('somebodythere@example.com')
-      subject.get("/api/v1/users/current.json")['user']['id'].should == regular_user['id']
+      # delete somebody!
+      owner.delete("/api/v1/users/#{regular_user['id']}.json")['user']['id'].should == regular_user['id']
+
+      # not found anymore!
+      lambda {
+        somebody.get("/api/v1/users/current.json")['errors']['type']
+      }.should raise_error(UserVoice::NotFound)
+
+      # this recreates somebody
+      somebody = subject.login_as('somebodythere@example.com')
+      somebody.get("/api/v1/users/current.json")['user']['id'].should_not == regular_user['id']
     end
 
     it "should raise error with invalid email parameter" do

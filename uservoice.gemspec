@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "uservoice/version"
 
 Gem::Specification.new do |s|
-  s.name        = "uservoice"
+  s.name        = "uservoice-ruby"
   s.version     = Uservoice::VERSION
   s.authors     = ["Raimo Tuisku"]
   s.email       = ["dev@usevoice.com"]
