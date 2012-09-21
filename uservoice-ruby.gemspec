@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary     = %q{Client library for UserVoice API}
   s.description = %q{The gem provides Ruby-bindings to UserVoice API and helps generating Single-Sign-On tokens.}
 
-  s.rubyforge_project = "uservoice"
+  s.rubyforge_project = "uservoice-ruby"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
