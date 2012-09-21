@@ -59,27 +59,27 @@ API_KEY and API_SECRET from an API client which you can create in Admin Console
 ```ruby
 require 'uservoice-ruby'
 begin
-  uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
+  client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
   # Get users of a subdomain (requires trusted client, but no user)
-  users = uservoice_client.get("/api/v1/users.json?per_page=3")['users']
+  users = client.get("/api/v1/users.json?per_page=3")['users']
   users.each do |user|
     puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
   end
 
   # Now, let's login as mailaddress@example.com, a regular user
-  uservoice_client.login_as('mailaddress@example.com')
+  regular_access_token = client.login_as('mailaddress@example.com')
 
   # Example request #1: Get current user.
-  user = uservoice_client.get("/api/v1/users/current.json")['user']
+  user = regular_access_token.get("/api/v1/users/current.json")['user']
 
   puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
 
   # Login as account owner
-  uservoice_client.login_as_owner
+  owner_access_token = client.login_as_owner
 
   # Example request #2: Create a new private forum limited to only example.com email domain.
-  forum = uservoice_client.post("/api/v1/forums.json", :forum => {
+  forum = owner_access_token.post("/api/v1/forums.json", :forum => {
     :name => 'Example.com Private Feedback',
     :private => true,
     :allow_by_email_domain => true,
@@ -106,19 +106,19 @@ your site permission to access his or her data in UserVoice.
 require 'uservoice-ruby'
 CALLBACK_URL = 'http://localhost:3000/' # your site
 
-uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
+client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
 
-# At this point you want to print/redirect to uservoice_client.authorize_url in your application.
+# At this point you want to print/redirect to client.authorize_url in your application.
 # Here we just output them as this is a command-line example.
-puts "1. Go to #{uservoice_client.authorize_url} and click \"Allow access\"."
+puts "1. Go to #{client.authorize_url} and click \"Allow access\"."
 puts "2. Then type the oauth_verifier which is passed as a GET parameter to the callback URL:"
 
 # In a web app we would get the oauth_verifier through a redirect from UserVoice (after a redirection back to CALLBACK_URL).
 # In this command-line example we just read it from stdin:
-uservoice_client.login_verified_user(gets.match('\w*').to_s)
+access_token = client.login_verified_user(gets.match('\w*').to_s)
 
 # All done. Now we can read the current user to know user's email address:
-user = uservoice_client.get("/api/v1/users/current.json")['user']
+user = access_token.get("/api/v1/users/current.json")['user']
 
 puts "User logged in, Name: #{user['name']}, email: #{user['email']}"
 ```
