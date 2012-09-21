@@ -62,7 +62,7 @@ module UserVoice
     end
 
     def login_with_verifier(oauth_verifier)
-      token = request_token.get_access_token(:oauth_verifier => oauth_verifier)
+      token = @request_token.get_access_token(:oauth_verifier => oauth_verifier)
       Client.new(@consumer, :oauth_token => token.token, :oauth_token_secret => token.secret)
     end
 
@@ -84,7 +84,7 @@ module UserVoice
     end
 
     def request_token
-      @consumer.get_request_token(:oauth_callback => @callback)
+      @request_token = @consumer.get_request_token(:oauth_callback => @callback)
     end
 
     def login_as_owner(&block)

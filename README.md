@@ -115,7 +115,7 @@ puts "2. Then type the oauth_verifier which is passed as a GET parameter to the 
 
 # In a web app we would get the oauth_verifier through a redirect from UserVoice (after a redirection back to CALLBACK_URL).
 # In this command-line example we just read it from stdin:
-access_token = client.login_verified_user(gets.match('\w*').to_s)
+access_token = client.login_with_verifier(gets.match('\w*').to_s)
 
 # All done. Now we can read the current user to know user's email address:
 user = access_token.get("/api/v1/users/current.json")['user']
