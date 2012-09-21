@@ -121,7 +121,7 @@ describe UserVoice do
       }.should raise_error(UserVoice::Unauthorized, /last owner/i)
     end
 
-    it "should not be able to delete any user as random user" do
+    it "should not be able to delete user without login" do
       regular_user = subject.login_as('somebodythere@example.com').get("/api/v1/users/current.json")['user']
 
       lambda {
