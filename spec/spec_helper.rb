@@ -1,4 +1,4 @@
-require 'uservoice'
+require 'uservoice-ruby'
 require 'yaml'
 
 def config

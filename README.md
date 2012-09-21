@@ -10,9 +10,15 @@ Installation
 
 Place this in your Gemfile:
 ```ruby
-gem 'uservoice', :git => 'https://github.com/uservoice/uservoice-ruby'
+gem 'uservoice-ruby'
 ```
-Run the bundle command and then try one of the examples below.
+and run the bundle command or type this in the command line:
+
+```
+gem install uservoice-ruby
+```
+
+Then try one of the examples below.
 
 Examples
 ========
@@ -32,7 +38,7 @@ SSO-token can be used to create sessions for SSO users. They are capable of sync
 Generating the SSO token from SSO key and given uservoice subdomain can be done by calling UserVoice.generate\_sso\_token method like this:
 
 ```ruby
-require 'uservoice'
+require 'uservoice-ruby'
 sso_token = UserVoice.generate_sso_token(USERVOICE_SUBDOMAIN, SSO_KEY, {
     :guid => 1001,
     :display_name => "John Doe",
@@ -51,7 +57,7 @@ API_KEY and API_SECRET from an API client which you can create in Admin Console
 -> Settings -> Channels -> API.
 
 ```ruby
-require 'uservoice'
+require 'uservoice-ruby'
 begin
   uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
@@ -97,7 +103,7 @@ calls. Just pass your user an authorize link to click, so that user may grant
 your site permission to access his or her data in UserVoice.
 
 ```ruby
-require 'uservoice'
+require 'uservoice-ruby'
 CALLBACK_URL = 'http://localhost:3000/' # your site
 
 uservoice_client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callback => CALLBACK_URL)
