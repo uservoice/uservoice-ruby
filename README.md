@@ -91,6 +91,9 @@ rescue UserVoice::Unauthorized => e
   # Thrown usually due to faulty tokens, untrusted client or if attempting
   # operations without Admin Privileges
   raise
+rescue UserVoice::NotFound => e
+  # Thrown when attempting an operation to a resource that does not exist
+  raise
 end
 ```
 
