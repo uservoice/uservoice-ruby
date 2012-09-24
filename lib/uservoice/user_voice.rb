@@ -62,6 +62,7 @@ module UserVoice
     end
 
     def login_with_verifier(oauth_verifier)
+      raise Unauthorized.new('Call request token first') if @request_token.nil?
       token = @request_token.get_access_token(:oauth_verifier => oauth_verifier)
       Client.new(@consumer, :oauth_token => token.token, :oauth_token_secret => token.secret)
     end
