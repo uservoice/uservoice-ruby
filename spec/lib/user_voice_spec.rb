@@ -129,10 +129,10 @@ describe UserVoice do
       }.should raise_error(UserVoice::Unauthorized)
     end
 
-    it "should be able to identify suggestions" do
+    it "should be able to identify suggestions and sign the PUT request which contains an array" do
       owner_token = subject.login_as_owner
-      external_scope='sync_to_moon'
-      suggestions = owner_token.get("/api/v1/suggestions.json?filter=with_external_id&external_scope=#{external_scope}&manual_action=#{external_scope}")['suggestions']
+      external_scope = 'sillyness'
+      suggestions = owner_token.get("/api/v1/suggestions.json?filter=without_external_id&external_scope=#{external_scope}")['suggestions']
 
       identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10 } }
 
