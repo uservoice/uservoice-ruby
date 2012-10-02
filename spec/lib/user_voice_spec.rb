@@ -19,6 +19,7 @@ describe UserVoice do
                                     config['api_secret'],
                                    :uservoice_domain => config['uservoice_domain'],
                                    :protocol => config['protocol']) }
+    let(:external_scope) { 'external_system_name' }
 
     it "should get user names from the API" do
       users = subject.get("/api/v1/users.json?per_page=3")
@@ -129,16 +130,24 @@ describe UserVoice do
       }.should raise_error(UserVoice::Unauthorized)
     end
 
-    it "should be able to identify suggestions and sign the PUT request which contains an array" do
-      owner_token = subject.login_as_owner
-      external_scope = 'sillyness'
-      suggestions = owner_token.get("/api/v1/suggestions.json?filter=without_external_id&external_scope=#{external_scope}")['suggestions']
+    it "should get an error when trying to query suggestions with an unexistant manual action" do
+      lambda {
+        subject.login_as_owner do |owner_token|
+          owner_token.get("/api/v1/suggestions.json?filter=with_external_id&external_scope=#{external_scope}&manual_action=#{external_scope}")['suggestions']
+        end
+      }.should raise_error(UserVoice::NotFound)
+    end
 
-      identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10 } }
+    it "should identify a suggestion" do
+      owner_token = subject.login_as_owner
+
+      suggestions = owner_token.get("/api/v1/suggestions.json?filter=without_external_id&external_scope=#{external_scope}&per_page=1")['suggestions']
+      identifications = suggestions.map {|s| { :id => s['id'], :external_id => s['id'].to_i*10, :url => 'http://url.example.com' } }
 
       ids = owner_token.put("/api/v1/suggestions/identify.json",
-                          :external_scope => external_scope,
-                          :identifications => identifications)['identifications']['ids']
+                            :upsert => true,
+                            :external_scope => external_scope,
+                            :identifications => identifications)['identifications']['ids']
       ids.should == identifications.map { |s| s[:id] }.sort
     end
 
