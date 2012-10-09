@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe UserVoice::Collection do
-  PER_PAGE = 500
   ELEMENTS = 1501 # 4 pages, one record in the last page
 
   context 'having an empty result set' do
@@ -68,7 +67,7 @@ describe UserVoice::Collection do
     end
 
     it 'should collect ids' do
-      @client.should_receive(:get).with("/api/v1/suggestions?per_page=#{PER_PAGE}&page=1").once
+      @client.should_receive(:get).with("/api/v1/suggestions?per_page=#{UserVoice::Collection::PER_PAGE}&page=1").once
 
       @collection.collect do |val|
         val['id']
@@ -84,12 +83,21 @@ describe UserVoice::Collection do
 
     before do
       @client = mock()
-      
+
       4.times.map do |page_index|
-        @client.stub(:get).with("/api/v1/suggestions?per_page=#{PER_PAGE}&page=#{page_index+1}") do
+        page_first_index = UserVoice::Collection::PER_PAGE * page_index + 1
+        page_last_index = [UserVoice::Collection::PER_PAGE * (page_index + 1), ELEMENTS].min
+
+        @client.stub(:get).with("/api/v1/suggestions?per_page=#{UserVoice::Collection::PER_PAGE}&page=#{page_index+1}") do
           {
-            "response_data" => {"page"=> page_index+1, "per_page" => PER_PAGE, "total_records" => ELEMENTS, "filter"=>"all", "sort"=>"votes"},
-            "suggestions"=> (PER_PAGE * page_index + 1).upto([PER_PAGE * (page_index + 1), ELEMENTS].min).map do |idea_index| 
+            "response_data" => {
+              "page"=> page_index+1,
+              "per_page" => UserVoice::Collection::PER_PAGE,
+              "total_records" => ELEMENTS,
+              "filter"=>"all",
+              "sort"=>"votes"
+            },
+            "suggestions"=> page_first_index.upto(page_last_index).map do |idea_index|
               {
                 "url"=>"http://uservoice-subdomain.uservoice.com/forums/1-general/suggestions/#{idea_index}-idea",
                 "id"=> idea_index,
@@ -107,7 +115,7 @@ describe UserVoice::Collection do
     end
 
     it 'should have correct size' do
-      @client.should_receive(:get).with("/api/v1/suggestions?per_page=#{PER_PAGE}&page=1").once
+      @client.should_receive(:get).with("/api/v1/suggestions?per_page=#{UserVoice::Collection::PER_PAGE}&page=1").once
       @collection.size.should == ELEMENTS
     end
 

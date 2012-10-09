@@ -1,10 +1,12 @@
 module UserVoice
   class Collection
+    PER_PAGE = 500
+
     def initialize(client, query, opts={})
       @client = client
       @query = query
       @limit = opts[:limit] || 2**60
-      @per_page = [@limit, 500].min
+      @per_page = [@limit, PER_PAGE].min
       @pages = {}
     end
 
@@ -46,7 +48,7 @@ module UserVoice
     end
         
     def [](i)
-      load_page((i/500.0).floor + 1)[i%500] if (0..@limit-1).include?(i)
+      load_page((i/PER_PAGE.to_f).floor + 1)[i%PER_PAGE] if (0..@limit-1).include?(i)
     end
 
     private
