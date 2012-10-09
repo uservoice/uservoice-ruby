@@ -9,24 +9,24 @@ module UserVoice
     end
 
     def first
-      load_record(0)
+      self[0]
     end
 
     def last
-      load_record(size() - 1)
+      self[size() - 1]
     end
 
     def size
       if @response_data.nil?
-        load_record(0)
+        self[0]
       end
-      @response_data['total_records']
+      [@response_data['total_records'], @limit].min
     end
 
     def map
       index = 0
       records = []
-      while record = load_record(index)
+      while record = self[index]
         records.push(yield record)
         index += 1
       end
@@ -40,12 +40,17 @@ module UserVoice
         value
       end
     end
+
+    def to_a
+      each {}
+    end
         
+    def [](i)
+      load_page((i/500.0).floor + 1)[i%500] if (0..@limit-1).include?(i)
+    end
+
     private
 
-    def load_record(i)
-      load_page((i/500.0).floor + 1)[i%500]
-    end
 
     def load_page(i)
       if @pages[i].nil?

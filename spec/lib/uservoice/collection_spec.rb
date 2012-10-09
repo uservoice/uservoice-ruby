@@ -23,6 +23,14 @@ describe UserVoice::Collection do
         raise RuntimeError.new('should be empty')
       end
     end
+
+    it 'should convert to empty array with to_a' do
+      @collection.to_a.should == []
+    end
+
+    it 'should not have first record' do
+      @collection[0].should == nil
+    end
   end
 
   context 'having a list with one element' do
@@ -103,6 +111,12 @@ describe UserVoice::Collection do
       @collection.size.should == ELEMENTS
     end
 
+    it 'should the size defined by limit' do
+      collection = UserVoice::Collection.new(@client, '/api/v1/suggestions', :limit => 1337)
+      collection.size.should == 1337
+      collection.last['id'].should == 1337
+    end
+
     it 'should get last element and array size with two api calls' do
       @collection.last['id'].should == ELEMENTS
       @collection.first['id'].should == 1
@@ -119,6 +133,12 @@ describe UserVoice::Collection do
 
     it 'should map ids' do
       @collection.map do |val|
+        val['id']
+      end.should == 1.upto(ELEMENTS).to_a
+    end
+
+    it 'should convert to array' do
+      @collection.to_a.map do |val|
         val['id']
       end.should == 1.upto(ELEMENTS).to_a
     end
