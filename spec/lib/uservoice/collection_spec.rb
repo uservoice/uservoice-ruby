@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe UserVoice::Collection do
-  ELEMENTS = 1501 # 4 pages, one record in the last page
 
   context 'having an empty result set' do
     let(:client) do
@@ -80,6 +79,7 @@ describe UserVoice::Collection do
   end
 
   context 'having a list with 1501 elements' do
+    ELEMENTS = 1501 # 4 pages, one record in the last page
 
     before do
       @client = mock()
