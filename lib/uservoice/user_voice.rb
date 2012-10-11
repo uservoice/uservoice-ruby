@@ -33,4 +33,9 @@ module UserVoice
 
     return CGI.escape(encoded)
   end
+
+  def self.decrypt_sso_token(subdomain_key, sso_key, encoded)
+    encrypted = Base64.decode64(CGI.unescape(encoded))
+    return JSON.parse(EzCrypto::Key.with_password(subdomain_key, sso_key).decrypt(encrypted))
+  end
 end
