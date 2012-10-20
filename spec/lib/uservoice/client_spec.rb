@@ -20,6 +20,38 @@ describe UserVoice::Client do
     end.should raise_error(UserVoice::Unauthorized)
   end
 
+  it 'normal user_should be able to send message and send another ticket_message' do
+    pending 'Slow test disabled'
+    additional_comment = 'This is my latest comment on the issue'
+    user = subject.login_as('somebodythere@example.com')
+    owner = subject.login_as_owner
+
+    @ticket = user.post('/api/v1/tickets', :ticket => {
+      :subject => 'A new ticket has arrived in your console',
+      :message => 'My msg'
+    })['ticket']
+    p @ticket
+
+    p 'waiting spam review'
+    Kernel.sleep(3);
+    p 'posting response!'
+    p owner.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
+      :text => 'Thanks for information!'
+    })
+
+    p 'sleeping 3s'
+    Kernel.sleep(3);
+    p 'posting followup'
+
+    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'closed'
+
+    p user.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
+      :text => additional_comment
+    })
+    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'open'
+    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['messages'].first['body'].should == additional_comment
+  end
+
   it "should be able to get access token as owner" do
     subject.login_as_owner do |owner|
       owner.get("/api/v1/users/current.json")['user']['roles']['owner'].should == true
