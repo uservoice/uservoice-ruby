@@ -173,6 +173,11 @@ describe UserVoice::Client do
       my_token.get("/api/v1/users/current.json")
     }.should raise_error(UserVoice::NotFound)
   end
+  it 'should throw 404 if user not found' do
+    lambda {
+      subject.login_as_owner.get("/api/v1/users/2345871235")
+    }.should raise_error(UserVoice::NotFound)
+  end
 
   it "should/be able to delete random user and login as him after that" do
     somebody = subject.login_as('somebodythere@example.com')
