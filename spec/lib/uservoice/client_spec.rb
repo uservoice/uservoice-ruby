@@ -197,7 +197,7 @@ describe UserVoice::Client do
 
     # this recreates somebody
     somebody = subject.login_as('somebodythere@example.com')
-    somebody.get("/api/v1/users/current.json")['user']['id'].should_not == regular_user['id']
+    somebody.get("/api/v1/users/current.json")['user']['id'].should == regular_user['id']
   end
 
   it "should raise error with invalid email parameter" do
