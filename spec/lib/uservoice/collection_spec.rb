@@ -78,8 +78,8 @@ describe UserVoice::Collection do
     end
   end
 
-  context 'having a list with 1501 elements' do
-    ELEMENTS = 1501 # 4 pages, one record in the last page
+  context 'having a list with 301 elements' do
+    ELEMENTS = 301 # 4 pages, one record in the last page
 
     before do
       @client = mock()
@@ -120,9 +120,9 @@ describe UserVoice::Collection do
     end
 
     it 'should the size defined by limit' do
-      collection = UserVoice::Collection.new(@client, '/api/v1/suggestions', :limit => 1337)
-      collection.size.should == 1337
-      collection.last['id'].should == 1337
+      collection = UserVoice::Collection.new(@client, '/api/v1/suggestions', :limit => 137)
+      collection.size.should == 137
+      collection.last['id'].should == 137
     end
 
     it 'should get last element and array size with two api calls' do

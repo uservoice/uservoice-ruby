@@ -1,6 +1,6 @@
 module UserVoice
   class Collection
-    PER_PAGE = 500
+    PER_PAGE = 100
 
     def initialize(client, query, opts={})
       @client = client
