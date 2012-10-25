@@ -62,7 +62,7 @@ begin
   client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET)
 
   # Get users of a subdomain (requires trusted client, but no user)
-  users = client.get("/api/v1/users.json?per_page=3")['users']
+  users = client.get_collection("/api/v1/users")
   users.each do |user|
     puts "User: \"#{user['name']}\", Profile URL: #{user['url']}"
   end
@@ -80,7 +80,7 @@ begin
 
   # Example request #2: Create a new private forum limited to only example.com email domain.
   forum = owner_access_token.post("/api/v1/forums.json", :forum => {
-    :name => 'Example.com Private Feedback',
+    :name => 'Ruby Client Private Feedback',
     :private => true,
     :allow_by_email_domain => true,
     :allowed_email_domains => [{:domain => 'example.com'}]
