@@ -99,6 +99,20 @@ describe UserVoice::Client do
     user['email'].should == 'mailaddress@example.com'
   end
 
+  it "should update the email of the current user" do
+    user = subject.login_as('mailaddress@example.com') do |token|
+      token.put("/api/v1/users/0", :user => {
+        :email => 'mailaddress123@example.com'
+      })
+      token.get("/api/v1/users/current")['user']
+    end
+
+    user_with_new_email = subject.login_as('mailaddress123@example.com')
+    id = user_with_new_email.get("/api/v1/users/current")['user']['id']
+    id.should == user['id']
+    user_with_new_email.delete("/api/v1/users/#{id}")['user']
+  end
+
   it "should get current user with copied access token" do
     original_token = subject.login_as('mailaddress@example.com')
 
