@@ -4,7 +4,7 @@ require "uservoice/version"
 
 Gem::Specification.new do |s|
   s.name        = "uservoice-ruby"
-  s.version     = Uservoice::VERSION
+  s.version     = UserVoice::VERSION
   s.authors     = ["Raimo Tuisku"]
   s.email       = ["dev@usevoice.com"]
   s.homepage    = "http://developer.uservoice.com"
