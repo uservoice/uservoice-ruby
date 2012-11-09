@@ -30,7 +30,7 @@ module UserVoice
 
     def login_with_verifier(oauth_verifier)
       raise Unauthorized.new('Call request token first') if @request_token.nil?
-      token = @request_token.get_access_token(:oauth_verifier => oauth_verifier)
+      token = @request_token.get_access_token({:oauth_verifier => oauth_verifier}, {}, DEFAULT_HEADERS)
       Client.new(@consumer, :oauth_token => token.token, :oauth_token_secret => token.secret)
     end
 
@@ -52,7 +52,7 @@ module UserVoice
     end
 
     def request_token
-      @request_token = @consumer.get_request_token(:oauth_callback => @callback)
+      @request_token = @consumer.get_request_token({:oauth_callback => @callback}, {}, DEFAULT_HEADERS)
     end
 
     def login_as_owner(&block)
