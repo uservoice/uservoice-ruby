@@ -243,7 +243,7 @@ describe UserVoice::Client do
 
     # this recreates somebody
     somebody = subject.login_as('somebodythere@example.com')
-    somebody.get("/api/v1/users/current.json")['user']['id'].should == regular_user['id']
+    somebody.get("/api/v1/users/current.json")['user']['email'].should == regular_user['email']
   end
 
   it "should raise error with invalid email parameter" do
