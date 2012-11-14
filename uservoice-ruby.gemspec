@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = UserVoice::VERSION
   s.authors     = ["Raimo Tuisku"]
   s.email       = ["dev@usevoice.com"]
-  s.homepage    = "http://developer.uservoice.com"
+  s.homepage    = "http://developer.uservoice.com/docs/api/ruby-sdk/"
   s.summary     = %q{Client library for UserVoice API}
   s.description = %q{The gem provides Ruby-bindings to UserVoice API and helps generating Single-Sign-On tokens.}
 
