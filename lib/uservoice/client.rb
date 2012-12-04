@@ -3,10 +3,20 @@ module UserVoice
 
     def initialize(*args)
       case args.size
-      when 3,4
-        init_subdomain_and_api_keys(*args)
       when 1,2
-        init_consumer_and_access_token(*args)
+        if args[1].is_a?(String)
+          init_subdomain_and_api_keys(args[0], args[1])
+        else
+          init_consumer_and_access_token(*args)
+        end
+      when 3
+        if args[2].is_a?(String)
+          init_subdomain_and_api_keys(args[0], args[1], args[2])
+        else
+          init_subdomain_and_api_keys(args[0], args[1], nil, args[2])
+        end
+      when 4
+        init_subdomain_and_api_keys(*args)
       end
     end
 

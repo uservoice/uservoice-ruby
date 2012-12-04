@@ -13,6 +13,13 @@ describe UserVoice::Client do
     user_names.all?.should == true
     user_names.size.should == 3
   end
+  it "should get first non-private forum as unsigned client" do
+    unsigned_client = UserVoice::Client.new(config['subdomain_name'],
+                                            config['api_key'],
+                                           :uservoice_domain => config['uservoice_domain'],
+                                           :protocol => config['protocol'])
+    unsigned_client.get_collection('/api/v1/forums', :limit => 1).first['private'].should == false
+  end
 
   it "should not get current user without logged in user" do
     lambda do
