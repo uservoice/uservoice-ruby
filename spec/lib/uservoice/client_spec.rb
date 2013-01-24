@@ -83,6 +83,13 @@ describe UserVoice::Client do
     end.should raise_error(UserVoice::Unauthorized)
   end
 
+  it "should be able to create KB article as an owner" do
+    owner = subject.login_as('raimo@uservoice.com')
+    result = owner.post("/api/v1/articles.json", :article => {
+      :title => 'good morning'
+    })
+  end
+
   it "should be able to create and delete a forum as the owner" do
     owner = subject.login_as_owner
     forum = owner.post("/api/v1/forums.json", :forum => {
