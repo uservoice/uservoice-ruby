@@ -27,36 +27,22 @@ describe UserVoice::Client do
     end.should raise_error(UserVoice::Unauthorized)
   end
 
-  it 'normal user_should be able to send message and send another ticket_message' do
-    pending 'Slow test disabled'
-    additional_comment = 'This is my latest comment on the issue'
+  it 'normal user_should be able to send message and owner respond to it' do
+    response_msg = 'This is my latest response on the issue'
     user = subject.login_as('somebodythere@example.com')
     owner = subject.login_as_owner
 
     @ticket = user.post('/api/v1/tickets', :ticket => {
+      :state => 'open',
       :subject => 'A new ticket has arrived in your console',
       :message => 'My msg'
     })['ticket']
-    p @ticket
 
-    p 'waiting spam review'
-    Kernel.sleep(3);
-    p 'posting response!'
-    p owner.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
-      :text => 'Thanks for information!'
+    owner.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
+      :text => response_msg
     })
-
-    p 'sleeping 3s'
-    Kernel.sleep(3);
-    p 'posting followup'
-
     subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'closed'
-
-    p user.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
-      :text => additional_comment
-    })
-    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'open'
-    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['messages'].first['body'].should == additional_comment
+    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['messages'].first['body'].should == response_msg
   end
 
   it "should be able to get access token as owner" do
@@ -84,9 +70,10 @@ describe UserVoice::Client do
   end
 
   it "should be able to create KB article as an owner" do
-    owner = subject.login_as('raimo@uservoice.com')
+    owner = subject.login_as_owner
     result = owner.post("/api/v1/articles.json", :article => {
-      :title => 'good morning'
+      :question => 'What is up?',
+      :answer_html => 'Nothing much'
     })
   end
 
