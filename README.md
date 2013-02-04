@@ -118,7 +118,7 @@ client = UserVoice::Client.new(USERVOICE_SUBDOMAIN, API_KEY, API_SECRET, :callba
 # At this point you want to print/redirect to client.authorize_url in your application.
 # Here we just output them as this is a command-line example.
 puts "1. Go to #{client.authorize_url} and click \"Allow access\"."
-puts "2. Then type the oauth_verifier which is passed as a GET parameter (..&oauth_verifier=[this one]) to the callback URL:"
+puts "2. Then type the oauth_verifier from the GET parameter from callback (..&oauth_verifier=[this one]):"
 
 # In a web app we would get the oauth_verifier through a redirect from UserVoice (after a redirection back to CALLBACK_URL).
 # In this command-line example we just read it from stdin:
