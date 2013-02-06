@@ -146,6 +146,7 @@ describe UserVoice::Client do
   end
 
   it "should not be able to delete owner" do
+    pending 'test that deletes skipped'
     owner_access_token = subject.login_as_owner
 
     owner = owner_access_token.get("/api/v1/users/current.json")['user']
