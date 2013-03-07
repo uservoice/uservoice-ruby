@@ -27,6 +27,28 @@ describe UserVoice::Client do
     end.should raise_error(UserVoice::Unauthorized)
   end
 
+  it 'should be able to attach file in ticket' do
+    user = subject.login_as('my@example.com')
+
+    @ticket = user.post('/api/v1/tickets', :ticket => {
+      :subject => 'A new ticket has arrived in your console',
+      :message => 'My msg',
+      :attachments => [{
+        :content_type => 'image/png',
+        :name => 'testi.png',
+        :data => 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/'+
+                  '9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJl'+
+                  'YWR5ccllPAAAAH5JREFUeNpi/P//PwMlgImBQsCCzG'+
+                  'FkZETmGgPxTDT16UAXn0URAXkBhrGASCA+A8SbsakH'+
+                  'YUJeUIfSB8gNA2MofZYcA6SAWJISA2C23wLiz+QYYE'+
+                  '/IdmJdcIAcA9SAmJcSFxgToxmfAQ7kGqAGTXkwF6RB'+
+                  'UyNOwDjguREgwAAEES2zre7f8gAAAABJRU5ErkJggg=='
+      }]
+    })['ticket']
+
+    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'open'
+  end
+
   it 'normal user_should be able to send message and owner respond to it' do
     response_msg = 'This is my latest response on the issue'
     user = subject.login_as('somebodythere@example.com')
