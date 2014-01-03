@@ -99,7 +99,7 @@ describe UserVoice::Client do
 
   it "should update the email of the current user" do
     user = subject.login_as('mailaddress@example.com') do |token|
-      token.put("/api/v1/users/0", :user => {
+      token.put("/api/v1/users/current", :user => {
         :email => 'mailaddress123@example.com'
       })
       token.get("/api/v1/users/current")['user']
@@ -194,19 +194,20 @@ describe UserVoice::Client do
   end
 
   it "should be able to delete itself" do
-    my_token = subject.login_as('somebodythere@example.com')
+    owner = subject.login_as_owner
+    user_count_1st = owner.get_collection("/api/v1/users.json").size
+    my_token = subject.login_as('somenewthere@example.com')
+
+    user_count_1st.should == owner.get_collection("/api/v1/users.json").size - 1
 
     # whoami
     my_id = my_token.get("/api/v1/users/current.json")['user']['id']
 
     # Delete myself!
     my_token.delete("/api/v1/users/#{my_id}.json")['user']['id'].should == my_id
-
-    # I don't exist anymore
-    lambda {
-      my_token.get("/api/v1/users/current.json")
-    }.should raise_error(UserVoice::NotFound)
+    user_count_1st.should == owner.get_collection("/api/v1/users.json").size
   end
+
   it 'should throw 404 if user not found' do
     lambda {
       subject.login_as_owner.get("/api/v1/users/2345871235")
@@ -216,6 +217,7 @@ describe UserVoice::Client do
   it "should/be able to delete random user and login as him after that" do
     somebody = subject.login_as('somebodythere@example.com')
     owner = subject.login_as_owner
+    user_count = owner.get_collection("/api/v1/users.json").size
 
     # somebody is still there...
     regular_user = somebody.get("/api/v1/users/current.json")['user']
@@ -225,9 +227,7 @@ describe UserVoice::Client do
     owner.delete("/api/v1/users/#{regular_user['id']}.json")['user']['id'].should == regular_user['id']
 
     # not found anymore!
-    lambda {
-      somebody.get("/api/v1/users/current.json")['errors']['type']
-    }.should raise_error(UserVoice::NotFound)
+    user_count.should == owner.get_collection("/api/v1/users.json").size + 1
 
     # this recreates somebody
     somebody = subject.login_as('somebodythere@example.com')
