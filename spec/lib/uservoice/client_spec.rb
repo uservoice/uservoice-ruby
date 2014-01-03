@@ -13,13 +13,6 @@ describe UserVoice::Client do
     user_names.all?.should == true
     user_names.size.should == 3
   end
-  it "should get first non-private forum as unsigned client" do
-    unsigned_client = UserVoice::Client.new(config['subdomain_name'],
-                                            config['api_key'],
-                                           :uservoice_domain => config['uservoice_domain'],
-                                           :protocol => config['protocol'])
-    unsigned_client.get_collection('/api/v1/forums', :limit => 1).first['private'].should == false
-  end
 
   it "should not get current user without logged in user" do
     lambda do
@@ -47,24 +40,6 @@ describe UserVoice::Client do
     })['ticket']
 
     subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'open'
-  end
-
-  it 'normal user_should be able to send message and owner respond to it' do
-    response_msg = 'This is my latest response on the issue'
-    user = subject.login_as('somebodythere@example.com')
-    owner = subject.login_as_owner
-
-    @ticket = user.post('/api/v1/tickets', :ticket => {
-      :state => 'open',
-      :subject => 'A new ticket has arrived in your console',
-      :message => 'My msg'
-    })['ticket']
-
-    owner.post("/api/v1/tickets/#{@ticket['id']}/ticket_messages", :ticket_message => {
-      :text => response_msg
-    })
-    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['state'].should == 'closed'
-    subject.get("/api/v1/tickets/#{@ticket['id']}")['ticket']['messages'].first['body'].should == response_msg
   end
 
   it "should be able to get access token as owner" do
@@ -165,17 +140,6 @@ describe UserVoice::Client do
     lambda {
       result = subject.delete("/api/v1/users/#{234}.json")
     }.should raise_error(UserVoice::Unauthorized, /user required/i)
-  end
-
-  it "should not be able to delete owner" do
-    pending 'test that deletes skipped'
-    owner_access_token = subject.login_as_owner
-
-    owner = owner_access_token.get("/api/v1/users/current.json")['user']
-
-    lambda {
-      result = owner_access_token.delete("/api/v1/users/#{owner['id']}.json")
-    }.should raise_error(UserVoice::Unauthorized, /last owner/i)
   end
 
   it "should not be able to delete user without login" do
