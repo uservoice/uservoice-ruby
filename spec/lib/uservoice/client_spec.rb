@@ -238,4 +238,8 @@ describe UserVoice::Client do
     expect { subject.login_as('ma') }.to raise_error(UserVoice::Unauthorized)
     expect { subject.login_as(nil) }.to raise_error(UserVoice::Unauthorized)
   end
+
+  it "should allow users with .technology email addresses to be valid" do
+    expect('somebody@example.technology').to match(UserVoice::EMAIL_FORMAT)
+  end
 end
