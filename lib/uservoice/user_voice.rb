@@ -9,7 +9,7 @@ require 'base64'
 require 'oauth'
 
 module UserVoice
-  EMAIL_FORMAT = %r{^(\w[-+.\w!\#\$%&'\*\+\-/=\?\^_`\{\|\}~]*@([-\w]*\.)+[a-zA-Z]{2,9})$}
+  EMAIL_FORMAT = %r{^(\w[-+.\w!\#\$%&'\*\+\-/=\?\^_`\{\|\}~]*@([-\w]*\.)+[a-zA-Z]{2,10})$}
   DEFAULT_HEADERS = { 'Content-Type'=> 'application/json', 'Accept'=> 'application/json', 'API-Client' => "uservoice-ruby-#{UserVoice::VERSION}" }
 
   class APIError < RuntimeError
