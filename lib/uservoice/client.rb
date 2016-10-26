@@ -92,6 +92,22 @@ module UserVoice
       end
     end
 
+    def curl(method, uri, request_body={}, headers={})
+      headers = DEFAULT_HEADERS.merge(headers)
+
+      if headers['Content-Type'] == 'application/json' && request_body.is_a?(Hash)
+        request_body = request_body.to_json
+      end
+
+      # TODO: Add the oauth token header
+      lines = [
+        "curl #{@token.consumer.uri}#{uri}",
+        *headers.map {|k, v| "-H #{k}: #{v}" }
+      ]
+      request_body.empty? || lines << "--data '#{request_body}'"
+      puts lines.join(" \\\n  ")
+    end
+
     def request(method, uri, request_body={}, headers={})
       headers = DEFAULT_HEADERS.merge(headers)
 
