@@ -1,3 +1,5 @@
+:no_entry: [DEPRECATED] This repository is no longer actively maintained. You may fork the project but we are no longer accepting pull requests or new issues. You may reach out to support@uservoice.com with questions.
+
 UserVoice gem for API connections
 =================================
 
